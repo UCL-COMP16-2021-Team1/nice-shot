@@ -1,0 +1,6 @@
+# Generic 
+.DS_Store
+.vscode/
+
+# Specific
+data/

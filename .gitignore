@@ -5,3 +5,6 @@
 
 # Specific
 data/
+
+#Virtual environments
+venv/

@@ -4,6 +4,7 @@
 .ipynb_checkpoints
 
 # Specific
+data/
 
 #Virtual environments
 venv/

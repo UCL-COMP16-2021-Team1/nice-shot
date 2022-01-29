@@ -3,6 +3,7 @@ from os import listdir, mkdir
 from os.path import isdir, join
 from numpy import asarray, savetxt, ndarray
 import os
+#  need to clean up imports
 
 joint_names = ['HEAD',
     'LEFT_ELBOW',
@@ -50,9 +51,12 @@ def process_shot_type(root:str, out_dir:str) -> None:
 
         create_dir(out_dir_csv)
         
-        matrix_array = skeleton_to_matrix(csv_path)
+        matrix_array = skeleton_to_matrix(csv_path) # this is what needs to be maintained
+
+        # idk why I take csv here but
 
         joint_count = 0
+         
         for joint in matrix_array:
            savetxt(join(out_dir_csv, joint_names[joint_count]) + '.csv', joint, delimiter=',')
            joint_count +=1

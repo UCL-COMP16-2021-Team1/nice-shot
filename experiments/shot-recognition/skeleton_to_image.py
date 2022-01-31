@@ -33,6 +33,7 @@ def process_skeletons(root, out_dir):
         skeleton_to_image(root + s, out_dir + s[:-4] + ".png")
 
 if __name__ == "__main__":
+    """
     amateur_root = "data/THETIS_Skeletal_Joints/normal_oniFiles/ONI_AMATEURS/"
     shot_paths = [d for d in listdir(amateur_root) if isdir(join(amateur_root, d))]
     for s in shot_paths:
@@ -42,3 +43,5 @@ if __name__ == "__main__":
     shot_paths = [d for d in listdir(expert_root) if isdir(join(expert_root, d))]
     for s in shot_paths:
         process_skeletons(expert_root + s + "/", "data/skeleton_images/expert_" + s + "/")
+    """
+    skeleton_to_image("joints.txt", "joints_img.png")

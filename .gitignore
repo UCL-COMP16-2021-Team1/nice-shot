@@ -8,3 +8,6 @@ data/
 
 #Virtual environments
 venv/
+
+# Javascript
+node_modules/

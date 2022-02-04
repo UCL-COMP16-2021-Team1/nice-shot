@@ -2,9 +2,14 @@
 .DS_Store
 .vscode/
 .ipynb_checkpoints
+.idea/
 
 # Specific
 data/
+textures/
+
+#Large files
+.mp4
 
 #Virtual environments
 venv/

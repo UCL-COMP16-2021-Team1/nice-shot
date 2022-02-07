@@ -8,10 +8,10 @@
 data/
 textures/
 
-#Large files
+# Large files
 .mp4
 
-#Virtual environments
+# Virtual environments
 venv/
 
 # Javascript

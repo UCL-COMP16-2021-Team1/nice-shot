@@ -1,6 +1,7 @@
-from turtle import pos
 import cv2
+import numpy as np
 import mediapipe as mp
+import matplotlib.pyplot as plt
 from extract_pose import extract_pose_frames
 from classify_shot import classify_shot
 
@@ -9,7 +10,9 @@ mp_pose = mp.solutions.pose
 
 cap = cv2.VideoCapture("p1_backhand_s2.mp4")
 pose_frames, landmarks = extract_pose_frames(cap)
-shot_pred = classify_shot(pose_frames)
+
+shot_pred, score = classify_shot(pose_frames)
+print(shot_pred, score)
 
 cap = cv2.VideoCapture("p1_backhand_s2.mp4")
 frame_count = 0

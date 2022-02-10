@@ -1,15 +1,18 @@
-// Example code from THREE documentation on GTLFLoader
+import _ from 'lodash';
+import * as THREE from 'three';
 
-/**
- * Disclaimer about browser compatibility:
- * "GLTFLoader relies on ES6 Promises, which are not supported in IE11. 
- * To use the loader in IE11, you must include a polyfill providing 
- * a Promise replacement."
- */
+function component() {
+    const element = document.createElement('div');
+  
+    // Lodash, now imported by this script
+    element.innerHTML = _.join(['Hello', 'webpack'], ' ');
+  
+    return element;
+  }
+  
+  document.body.appendChild(component());
 
-import * as THREE from 'https://cdn.skypack.dev/pin/three@v0.137.5-HJEdoVYPhjkiJWkt6XIa/mode=imports/optimized/three.js';
-
-//import {GLTFLoader} from 'https://cdn.jsdelivr.net/npm/three@0.137.5/examples/jsm/loaders/GLTFLoader.js';
+import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader.js';
 //import {3DMLoader} from 'https://cdn.jsdelivr.net/npm/three@0.137.5/examples/jsm/loaders/3DMLoader.min.js';
 
 const scene = new THREE.Scene();
@@ -22,7 +25,7 @@ document.body.appendChild(renderer.domElement);
 
 const loader = new GLTFLoader();
 
-loader.load('scene.gtlf', function(gtlf){
+loader.load('scene.gltf', function(gtlf){
     scene.add(gtlf.scene);
 }, undefined, function(error){
     console.error(error);

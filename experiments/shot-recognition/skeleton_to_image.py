@@ -20,6 +20,11 @@ def skeleton_to_image(img_path, out_path):
             image[-1].append(coords)
 
     image = np.array(image)
+    
+    # remove (0, 0, 0) rows
+    zero_rows = image.sum(axis=2) == 0
+    image = image[~np.all(zero_rows, axis=1)]
+
     image /= np.abs(image).max()    # normalise to [-1,1]
     cv2.imwrite(out_path, (image+1)*127.5)  # fit image data to [0,255]
     

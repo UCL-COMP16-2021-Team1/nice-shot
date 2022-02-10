@@ -19,7 +19,13 @@ def motion_to_image(img_path, out_path):
             coords = [float(c) for c in line.split(" ")]
             image[-1].append(coords)
 
-    motion_image = image.copy()
+    image = np.array(image)
+
+    # remove (0, 0, 0) rows
+    zero_rows = image.sum(axis=2) == 0
+    image = image[~np.all(zero_rows, axis=1)]
+
+    motion_image = list(image).copy()
     for t in range(len(image)-1):
         for n in range(len(image[t])):
             motion_image[t][n][0] = image[t+1][n][0] - image[t][n][0]

@@ -9,5 +9,5 @@
 - Reconstruction of poses with 3D skeletons in [Three.js](https://threejs.org).
 
 ---
-## Additioonal Instructions for Development
+## Additional Instructions for Development
 - [Running the server](doc/cmdline_instructions.md)

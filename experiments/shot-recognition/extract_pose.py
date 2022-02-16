@@ -5,6 +5,9 @@ import mediapipe as mp
 mp_drawing = mp.solutions.drawing_utils
 mp_pose = mp.solutions.pose
 
+class PoseNotFoundError(Exception):
+    pass
+
 def format_joints(landmarks):
     joints = []
     # ordered joints as landmark indices
@@ -41,6 +44,9 @@ def extract_pose_frames(cap):
                 break
             results = pose.process(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
             landmarks.append(results.pose_landmarks)
+
+            if results.pose_world_landmarks is None:
+                raise PoseNotFoundError
 
             world_landmarks = results.pose_world_landmarks.landmark
             pose_frames.append(format_joints(world_landmarks))

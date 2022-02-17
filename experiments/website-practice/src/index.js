@@ -15,10 +15,10 @@ camera.position.set(1,2,-3);
 camera.lookAt(0,1,0);
 
 scene = new THREE.Scene();
-scene.background = new THREE.Color(0xa0a0a0);
+scene.background = new THREE.Color(0xfb000);
 
 const loader = new GLTFLoader();
-loader.load('scifi_girl_v.01/scene.gltf', function(gltf){
+loader.load('Soldier.glb', function(gltf){
     model = gltf.scene;
     scene.add(model);
 

@@ -1,20 +1,19 @@
 import cv2
-import numpy as np
 import mediapipe as mp
-import matplotlib.pyplot as plt
 from extract_pose import extract_pose_frames
 from classify_shot import classify_shot
 
 mp_drawing = mp.solutions.drawing_utils
 mp_pose = mp.solutions.pose
 
-cap = cv2.VideoCapture("p1_backhand_s2.mp4")
+video_path = "../experiments/shot-recognition/data/VIDEO_RGB/smash/p15_smash_s2.avi"
+cap = cv2.VideoCapture(video_path)
 pose_frames, landmarks = extract_pose_frames(cap)
 
 shot_pred, score = classify_shot(pose_frames)
 print(shot_pred, score)
 
-cap = cv2.VideoCapture("p1_backhand_s2.mp4")
+cap = cv2.VideoCapture(video_path)
 frame_count = 0
 while cap.isOpened():
     ret, frame = cap.read()

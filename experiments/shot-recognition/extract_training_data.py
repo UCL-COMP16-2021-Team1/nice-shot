@@ -23,5 +23,8 @@ for s in shots:
 
         skeleton_img = pose_frames / np.abs(pose_frames).max()
         skeleton_img = (skeleton_img+1)*127.5
+        skeleton_img = cv2.cvtColor(np.float32(skeleton_img), cv2.COLOR_RGB2BGR)
+        
         cv2.imwrite(out_path+v[:-4]+".png", skeleton_img)
+        print(v)
 

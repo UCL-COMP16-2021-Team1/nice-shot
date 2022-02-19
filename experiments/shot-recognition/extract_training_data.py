@@ -1,4 +1,4 @@
-from extract_pose import extract_pose_frames, PoseNotFoundError
+from extract_pose_from_video import extract_pose_frames, PoseNotFoundError
 from os import listdir, mkdir
 from os.path import isfile, isdir, join
 import cv2

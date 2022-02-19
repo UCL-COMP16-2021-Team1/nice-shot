@@ -45,7 +45,7 @@ def extract_pose_frames(cap):
 
             results = pose.process(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
             if results.pose_landmarks is None or results.pose_world_landmarks is None:
-                raise PoseNotFoundError("Pose could not be detected.")
+                continue
 
             landmarks.append(results.pose_landmarks)
             world_landmarks = results.pose_world_landmarks.landmark

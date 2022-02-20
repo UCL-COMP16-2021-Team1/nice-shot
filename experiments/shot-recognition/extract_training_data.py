@@ -16,7 +16,7 @@ for s in shots:
     for v in videos:
         cap = cv2.VideoCapture(src_path+v)
         try:
-            pose_frames, landmarks = extract_pose_frames(cap)
+            pose_frames = extract_pose_frames(cap)
         except PoseNotFoundError:
             continue
         cap.release()

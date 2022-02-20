@@ -35,8 +35,6 @@ def format_joints(landmarks):
 
 def extract_pose_frames(cap):
     pose_frames = []
-    landmarks = []
-
     with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as pose:
         while cap.isOpened():
             ret, frame = cap.read()
@@ -47,9 +45,8 @@ def extract_pose_frames(cap):
             if results.pose_landmarks is None or results.pose_world_landmarks is None:
                 raise PoseNotFoundError("Pose could not be detected.")
 
-            landmarks.append(results.pose_landmarks)
             world_landmarks = results.pose_world_landmarks.landmark
             pose_frames.append(format_joints(world_landmarks))
 
-    return np.array(pose_frames), landmarks
+    return np.array(pose_frames)
     

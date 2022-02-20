@@ -31,29 +31,31 @@ def format_joints(landmarks):
         else:
             l = landmarks[i]
             joints.append([l.x, l.y, l.z])
-    return joints
+    return np.array(joints)
 
-def extract_pose_frames(cap):
+def extract_pose_frames(frames):
     pose_frames = []
     landmarks = []
 
     with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as pose:
-        while cap.isOpened():
-            ret, frame = cap.read()
-            if not ret:
-                break
-
+        for frame in frames:
             results = pose.process(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
             if results.pose_landmarks is None or results.pose_world_landmarks is None:
+                if len(pose_frames) == 0:
+                    continue
+                pose_frames.append(pose_frames[-1].copy())
+                landmarks.append(landmarks[-1])
                 continue
 
             landmarks.append(results.pose_landmarks)
             world_landmarks = results.pose_world_landmarks.landmark
             pose_frames.append(format_joints(world_landmarks))
 
-    pose_frames = np.array(pose_frames)
-    if pose_frames.size == 0:
+    if len(pose_frames) == 0:
         raise PoseNotFoundError("Pose could not be detected.")
-
-    return pose_frames, landmarks
+    # pad pose frames to match total frames in video
+    while len(pose_frames) < len(frames):
+        pose_frames.insert(0, pose_frames[0])
+        landmarks.insert(0, landmarks[0])
+    return np.stack(pose_frames), landmarks
     

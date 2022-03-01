@@ -8,7 +8,7 @@ from classify_shot import classify_shot
 mp_drawing = mp.solutions.drawing_utils
 mp_pose = mp.solutions.pose
 
-cap = cv2.VideoCapture("../experiments/shot-recognition/data/VIDEO_RGB/backhand/p25_backhand_s3.avi")
+cap = cv2.VideoCapture("../experiments/shot-recognition/data/VIDEO_RGB/smash/p25_smash_s3.avi")
 frames = []
 while cap.isOpened():
     ret, frame = cap.read()
@@ -31,7 +31,7 @@ for t in shot_times:
     shot_pose_frames = pose_frames[start_t:end_t]
     shot_landmarks = landmarks[start_t:end_t]
 
-    shot = classify_shot(shot_pose_frames)
+    shot = classify_shot(shot_pose_frames)[0]
     for i in range(len(shot_frames)):
         frame = shot_frames[i].copy()
         mp_drawing.draw_landmarks(frame, shot_landmarks[i], mp_pose.POSE_CONNECTIONS)

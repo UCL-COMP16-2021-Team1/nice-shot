@@ -27,7 +27,7 @@ def analyse_video(cap):
         end_t = min(t+31,len(pose_frames)-1)
 
         pose = pose_frames[start_t:end_t]
-        shot = classify_shot(pose)
+        shot = classify_shot(pose)[0]
         shot_poses.append(pose)
         shot_classifications.append(shot)
     

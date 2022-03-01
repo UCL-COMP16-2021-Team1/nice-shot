@@ -16,19 +16,24 @@ def analyse_video(cap):
     cap.release()
     frames = np.stack(frames)
 
-    pose_frames, _ = extract_pose_frames(frames)
-    shot_times = detect_shot_times(pose_frames[:,3,...], pose_frames[:,10,...])
+    world_pose_frames, image_pose_frames = extract_pose_frames(frames)
+    shot_times = detect_shot_times(world_pose_frames[:,3,...], world_pose_frames[:,10,...])
 
+    shot_intervals = []
     shot_classifications = []
-    shot_poses = []
+    shot_world_poses = []
+    shot_image_poses = []
     for t in shot_times:
         # assume shot takes 2 seconds for a 30fps video
         start_t = max(0,t-30)
-        end_t = min(t+31,len(pose_frames)-1)
+        end_t = min(t+31,len(world_pose_frames)-1)
+        shot_intervals.append((start_t, end_t))
 
-        pose = pose_frames[start_t:end_t]
-        shot = classify_shot(pose)[0]
-        shot_poses.append(pose)
+        world_pose = world_pose_frames[start_t:end_t]
+        shot_world_poses.append(world_pose)
+        image_pose = image_pose_frames[start_t:end_t]
+        shot_image_poses.append(image_pose)
+        shot = classify_shot(world_pose)[0]
         shot_classifications.append(shot)
     
-    return shot_poses, shot_classifications
+    return shot_intervals, shot_classifications, shot_world_poses, shot_image_poses

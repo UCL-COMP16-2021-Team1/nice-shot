@@ -6,9 +6,18 @@ from analyse_video import analyse_video
 
 def pipeline2json(video_path, out_path):
     cap = cv2.VideoCapture(video_path)
-    shot_frames, shot_classifications = analyse_video(cap)
+    shot_intervals, shot_classifications, shot_world_poses, shot_image_poses  = analyse_video(cap)
     shots_json = {
-        "shots": [{"classification": c, "frames": f.tolist()} for (c, f) in zip(shot_classifications, shot_frames)]
+        "shots": 
+        [
+            {
+                "start_frame_idx": int(start_t),
+                "end_frame_idx": int(end_t),
+                "classification": classification,
+                "world_pose_frames": world_pose_frames.tolist(),
+                "image_pose_frames": image_pose_frames.tolist()
+            } for ((start_t, end_t), classification, world_pose_frames, image_pose_frames) in zip(shot_intervals, shot_classifications, shot_world_poses, shot_image_poses)
+        ]
     }
     json.dump(shots_json, open(out_path, "w"))
 

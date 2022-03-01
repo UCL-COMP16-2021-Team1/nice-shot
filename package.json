@@ -1,0 +1,31 @@
+{
+  "name": "tennis-trainer-application",
+  "version": "1.0.0",
+  "description": "N/A",
+  "main": "index.js",
+  "directories": {
+    "doc": "doc"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "webpack"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/UCL-COMP16-2021-Team1/tennis-trainer-application.git"
+  },
+  "author": "UCL IXN Team 1",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/UCL-COMP16-2021-Team1/tennis-trainer-application/issues"
+  },
+  "homepage": "https://github.com/UCL-COMP16-2021-Team1/tennis-trainer-application#readme",
+  "dependencies": {
+    "lodash": "^4.17.21",
+    "webpack": "^5.69.1",
+    "webpack-cli": "^4.9.2"
+  },
+  "devDependencies": {
+    "html-webpack-plugin": "^5.5.0"
+  }
+}

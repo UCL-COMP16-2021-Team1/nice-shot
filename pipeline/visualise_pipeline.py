@@ -8,6 +8,7 @@ from classify_shot import classify_shot
 mp_drawing = mp.solutions.drawing_utils
 mp_pose = mp.solutions.pose
 
+# extract frames from video.
 cap = cv2.VideoCapture("test_clip.mp4")
 frames = []
 while cap.isOpened():
@@ -17,15 +18,18 @@ while cap.isOpened():
     frames.append(frame)
 cap.release()
 frames = np.array(frames)
+#.
 
-pose_frames, landmarks = extract_pose_frames(frames)
-shot_times = detect_shot_times(pose_frames[:,3,0], pose_frames[:,3,0])
+pose_frames, landmarks = extract_pose_frames(frames) # what does extracting the pose frames do??
+shot_times = detect_shot_times(pose_frames[:,3,0], pose_frames[:,3,0])  # also dunno what shot times are
 
+# classifies shots
 shot_classifications = []
 for t in shot_times:
     shot_frames = pose_frames[max(0,t-20):min(len(pose_frames)-1,t+11),...]
     classification = classify_shot(shot_frames)
     shot_classifications.append(classification)
+#.
 
 shot_counter = 0
 current_shot = ""

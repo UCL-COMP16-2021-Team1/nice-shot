@@ -10,37 +10,133 @@
 	</head>
 	<body>
 		<script src="js/three.js"></script>
+		<script src="js/OrbitControls.js"></script>
 		<script>
-			// load shot data
-			var shot = {
-				start_frame_idx: 0,
-				end_frame_idx: 0,
-				classification: "",
-				world_pose_frames: [],
-				image_pose_frames: []
-			};
-
-			$.getJSON("test_json.json", function(data) {
+			// load shots data
+			$.ajaxSetup({
+				async: false
+			});
+			$.getJSON("test_shot.json", function(data) {
 				shot = data.shots[0];
 			});
 
 			// setup scene
 			const scene = new THREE.Scene();
 			const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-			camera.position.z = 5;
+			camera.position.z = 2;
 
 			const renderer = new THREE.WebGLRenderer();
-			renderer.setSize( window.innerWidth, window.innerHeight );
-			document.body.appendChild( renderer.domElement );
+			renderer.setSize(window.innerWidth, window.innerHeight);
+			document.body.appendChild(renderer.domElement);
 
-			// setup skeleton
+			const controls = new THREE.OrbitControls(camera, renderer.domElement);
+
+			function create_joint() {
+				const geometry = new THREE.SphereGeometry(0.01, 32, 16);
+				const material = new THREE.MeshBasicMaterial({color: 0xff0000});
+				const joint = new THREE.Mesh(geometry, material);
+				return joint;
+			};
+
+			function update_joint_position(joint, keyframes, idx) {
+				joint.position.x = keyframes[idx][0];
+				joint.position.y = -keyframes[idx][1];
+				joint.position.z = keyframes[idx][2];
+			};
+
+			function create_line_between_joints(j0, j1) {
+				const geometry = new THREE.BufferGeometry().setFromPoints([j0.position, j1.position]);
+				const material = new THREE.LineBasicMaterial({color: 0x00ffff});
+				const line = new THREE.Line(geometry, material);
+				return line;
+			};
 			
+			head = create_joint();
+			neck = create_joint();
+			left_shoulder = create_joint();
+			right_shoulder = create_joint();
+			torso = create_joint();
+			left_hip = create_joint();
+			right_hip = create_joint();
+			left_elbow = create_joint();
+			right_elbow = create_joint();
+			left_wrist = create_joint();
+			right_wrist = create_joint();
+			left_knee = create_joint();
+			right_knee = create_joint();
+			left_foot = create_joint();
+			right_foot = create_joint();
 
+			scene.add(head);
+			scene.add(neck);
+			scene.add(left_shoulder);
+			scene.add(right_shoulder);
+			scene.add(torso)
+			scene.add(left_hip);
+			scene.add(right_hip);
+			scene.add(left_elbow);
+			scene.add(right_elbow);
+			scene.add(left_wrist);
+			scene.add(right_wrist);
+			scene.add(left_knee);
+			scene.add(right_knee);
+			scene.add(left_foot);
+			scene.add(right_foot);
+
+			frame_count = shot.world_keyframes.head.length;
+			frame_idx = 0;
+			joint_lines = []
 			function animate() {
 				requestAnimationFrame(animate);
 
-				cube.rotation.x += 0.01;
-				cube.rotation.y += 0.01;
+				update_joint_position(head, shot.world_keyframes.head, frame_idx)
+				update_joint_position(neck, shot.world_keyframes.neck, frame_idx)
+				update_joint_position(left_shoulder, shot.world_keyframes.left_shoulder, frame_idx)
+				update_joint_position(right_shoulder, shot.world_keyframes.right_shoulder, frame_idx)
+				update_joint_position(torso, shot.world_keyframes.torso, frame_idx)
+				update_joint_position(left_hip, shot.world_keyframes.left_hip, frame_idx)
+				update_joint_position(right_hip, shot.world_keyframes.right_hip, frame_idx)
+				update_joint_position(left_elbow, shot.world_keyframes.left_elbow, frame_idx)
+				update_joint_position(right_elbow, shot.world_keyframes.right_elbow, frame_idx)
+				update_joint_position(left_wrist, shot.world_keyframes.left_wrist, frame_idx)
+				update_joint_position(right_wrist, shot.world_keyframes.right_wrist, frame_idx)
+				update_joint_position(left_knee, shot.world_keyframes.left_knee, frame_idx)
+				update_joint_position(right_knee, shot.world_keyframes.right_knee, frame_idx)
+				update_joint_position(left_foot, shot.world_keyframes.left_foot, frame_idx)
+				update_joint_position(right_foot, shot.world_keyframes.right_foot, frame_idx)
+
+				while (joint_lines.length > 0) {
+					line = joint_lines.pop()
+					scene.remove(line)
+					line.geometry.dispose()
+					line.material.dispose()
+				}
+				
+				joint_lines.push(create_line_between_joints(head, neck));
+				joint_lines.push(create_line_between_joints(left_shoulder, neck));
+				joint_lines.push(create_line_between_joints(right_shoulder, neck));
+				joint_lines.push(create_line_between_joints(torso, neck));
+				joint_lines.push(create_line_between_joints(torso, left_hip));
+				joint_lines.push(create_line_between_joints(torso, right_hip));
+				joint_lines.push(create_line_between_joints(left_shoulder, left_elbow));
+				joint_lines.push(create_line_between_joints(right_shoulder, right_elbow));
+				joint_lines.push(create_line_between_joints(left_elbow, left_wrist))
+				joint_lines.push(create_line_between_joints(right_elbow, right_wrist));
+				joint_lines.push(create_line_between_joints(left_hip, left_knee));
+				joint_lines.push(create_line_between_joints(right_hip, right_knee));
+				joint_lines.push(create_line_between_joints(left_knee, left_foot));
+				joint_lines.push(create_line_between_joints(right_knee, right_foot));
+
+				for (let i = 0; i < joint_lines.length; i++) {
+					scene.add(joint_lines[i]);
+				}
+
+				if (frame_idx < frame_count-1) {
+					frame_idx++;
+				}
+				else {
+					frame_idx = 0;
+				}
 
 				renderer.render(scene, camera);
 			};

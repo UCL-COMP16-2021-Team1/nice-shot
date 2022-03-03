@@ -7,14 +7,14 @@ from classify_shot import classify_shot
 
 def analyse_video(cap):
     fps = cap.get(cv2.CAP_PROP_FPS)
-    frames = []
     timestamps = []
+    frames = []
     while cap.isOpened():
+        timestamps.append(cap.get(cv2.CAP_PROP_POS_MSEC))
         ret, frame = cap.read()
         if not ret:
             break
         frames.append(frame)
-        timestamps.append(cap.get(cv2.CAP_PROP_POS_MSEC))
     frames = np.stack(frames)
 
     world_pose_frames, image_pose_frames = extract_pose_frames(frames)
@@ -33,7 +33,9 @@ def analyse_video(cap):
         start_t = max(0,int(t-interval))
         end_t = min(int(t+interval)+1, len(world_pose_frames)-1)
         shot_analysis["intervals"].append((start_t, end_t))
-        shot_analysis["timestamps"].append(timestamps[start_t:end_t])
+        shot_timestamps = timestamps[start_t:end_t]
+        shot_timestamps = [t - shot_timestamps[0] for t in shot_timestamps]
+        shot_analysis["timestamps"].append(shot_timestamps)
 
         world_pose = world_pose_frames[start_t:end_t]
         shot_analysis["world_poses"].append(world_pose)

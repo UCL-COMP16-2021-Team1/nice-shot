@@ -5,6 +5,9 @@ from extract_pose import extract_pose_frames
 from detect_shot_times import detect_shot_times
 from classify_shot import classify_shot
 
+mp_pose = mp.solutions.pose
+mp_drawing = mp.solutions.drawing_utils
+
 def analyse_video(cap):
     fps = cap.get(cv2.CAP_PROP_FPS)
     timestamps = []
@@ -17,7 +20,7 @@ def analyse_video(cap):
         frames.append(frame)
     frames = np.stack(frames)
 
-    world_pose_frames, image_pose_frames = extract_pose_frames(frames)
+    world_pose_frames, image_pose_frames, landmarks = extract_pose_frames(frames)
     shot_times = detect_shot_times(world_pose_frames[:,3,...], world_pose_frames[:,10,...])
 
     shot_analysis = {}
@@ -43,5 +46,20 @@ def analyse_video(cap):
         shot_analysis["image_poses"].append(image_pose)
         shot = classify_shot(world_pose)[0]
         shot_analysis["classifications"].append(shot)
+
+        shot_frames = frames[start_t:end_t]
+        shot_landmarks = landmarks[start_t:end_t]
+        height, width, _ = shot_frames[0].shape
+        #fourcc = cv2.VideoWriter_fourcc(*'XVID')
+        #out = cv2.VideoWriter(str(t)+"_"+shot+".avi", fourcc, 20.0, (height, width))
+        for i in range(len(shot_frames)):
+            frame = shot_frames[i].copy()
+            mp_drawing.draw_landmarks(frame, shot_landmarks[i], mp_pose.POSE_CONNECTIONS)
+            cv2.putText(frame, "Shot: "+shot, (10,100), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2, cv2.LINE_AA)
+            cv2.imshow("annotated video", frame)
+            if cv2.waitKey(25) & 0xFF == ord('q'):
+                break
+            #out.write(frame)
+        #out.release()
     
     return shot_analysis

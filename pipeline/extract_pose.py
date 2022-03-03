@@ -2,7 +2,6 @@ import cv2
 import numpy as np
 import mediapipe as mp
 
-mp_drawing = mp.solutions.drawing_utils
 mp_pose = mp.solutions.pose
 
 class PoseNotFoundError(Exception):
@@ -36,6 +35,7 @@ def format_joints(landmarks):
 def extract_pose_frames(video_frames):
     world_pose_frames = []
     image_pose_frames = []
+    landmarks = []
 
     with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as pose:
         for frame in video_frames:
@@ -45,12 +45,14 @@ def extract_pose_frames(video_frames):
                     continue
                 world_pose_frames.append(world_pose_frames[-1].copy())
                 image_pose_frames.append(image_pose_frames[-1].copy())
+                landmarks.append(landmarks[-1])
                 continue
             
             image_pose = np.array([[l.x, l.y] for l in results.pose_landmarks.landmark])
             image_pose_frames.append(image_pose)
             world_landmarks = results.pose_world_landmarks.landmark
             world_pose_frames.append(format_joints(world_landmarks))
+            landmarks.append(results.pose_landmarks)
 
     if len(world_pose_frames) == 0:
         raise PoseNotFoundError("Pose could not be detected.")
@@ -58,5 +60,6 @@ def extract_pose_frames(video_frames):
     while len(world_pose_frames) < len(video_frames):
         world_pose_frames.insert(0, world_pose_frames[0])
         image_pose_frames.insert(0, image_pose_frames[0])
-    return np.stack(world_pose_frames), np.stack(image_pose_frames)
+        landmarks.insert(0, landmarks[0])
+    return np.stack(world_pose_frames), np.stack(image_pose_frames), landmarks
     

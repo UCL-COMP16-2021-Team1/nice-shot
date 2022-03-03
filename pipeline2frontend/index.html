@@ -2,7 +2,7 @@
 <html>
 	<head>
 		<meta charset="utf-8">
-		<title>My first three.js app</title>
+		<title>3D Tennis Shot Analysis</title>
 		<style>
 			body { margin: 0; }
 		</style>
@@ -11,6 +11,7 @@
 	<body>
 		<script src="js/three.js"></script>
 		<script src="js/OrbitControls.js"></script>
+		<script src="js/dat.gui.min.js"></script>
 		<script>
 			// load shots data
 			$.ajaxSetup({
@@ -31,6 +32,12 @@
 
 			const controls = new THREE.OrbitControls(camera, renderer.domElement);
 
+			const gridHelper = new THREE.GridHelper(10, 10);
+			scene.add(gridHelper);
+
+			const clock = new THREE.Clock();
+
+			// create joints
 			function create_joint() {
 				const geometry = new THREE.SphereGeometry(0.01, 32, 16);
 				const material = new THREE.MeshBasicMaterial({color: 0xff0000});
@@ -39,9 +46,12 @@
 			};
 
 			function update_joint_position(joint, keyframes, idx) {
-				joint.position.x = keyframes[idx][0];
-				joint.position.y = -keyframes[idx][1];
-				joint.position.z = keyframes[idx][2];
+				floor = Math.floor(idx);
+				ceil = Math.ceil(idx);
+				t = ceil - idx;
+				joint.position.x = (1-t) * keyframes[ceil][0] + t * keyframes[floor][0];
+				joint.position.y = -((1-t) * keyframes[ceil][1] + t * keyframes[floor][1]) + 0.7;
+				joint.position.z = (1-t) * keyframes[ceil][2] + t * keyframes[floor][2];
 			};
 
 			function create_line_between_joints(j0, j1) {
@@ -51,21 +61,21 @@
 				return line;
 			};
 			
-			head = create_joint();
-			neck = create_joint();
-			left_shoulder = create_joint();
-			right_shoulder = create_joint();
-			torso = create_joint();
-			left_hip = create_joint();
-			right_hip = create_joint();
-			left_elbow = create_joint();
-			right_elbow = create_joint();
-			left_wrist = create_joint();
-			right_wrist = create_joint();
-			left_knee = create_joint();
-			right_knee = create_joint();
-			left_foot = create_joint();
-			right_foot = create_joint();
+			const head = create_joint();
+			const neck = create_joint();
+			const left_shoulder = create_joint();
+			const right_shoulder = create_joint();
+			const torso = create_joint();
+			const left_hip = create_joint();
+			const right_hip = create_joint();
+			const left_elbow = create_joint();
+			const right_elbow = create_joint();
+			const left_wrist = create_joint();
+			const right_wrist = create_joint();
+			const left_knee = create_joint();
+			const right_knee = create_joint();
+			const left_foot = create_joint();
+			const right_foot = create_joint();
 
 			scene.add(head);
 			scene.add(neck);
@@ -83,9 +93,56 @@
 			scene.add(left_foot);
 			scene.add(right_foot);
 
-			frame_count = shot.world_keyframes.head.length;
-			frame_idx = 0;
-			joint_lines = []
+			// create shot trail
+			var shot_trail_points = [];
+			for (let i = 0; i < shot.world_keyframes.left_wrist.length; i++) {
+				var p = shot.world_keyframes.left_wrist[i]
+				shot_trail_points.push(new THREE.Vector3(p[0], -p[1]+0.7, p[2]));
+			}
+			const curve = new THREE.CatmullRomCurve3(shot_trail_points);
+			const points = curve.getPoints(100);
+			const geometry = new THREE.BufferGeometry().setFromPoints(points);
+			const material = new THREE.LineBasicMaterial( { color: 0xff00ff } );
+			const shot_trail = new THREE.Line( geometry, material );
+			scene.add(shot_trail)
+
+			var shot_trail_options = {
+				hide: function() {
+					shot_trail.visible = false;
+				},
+				show: function() {
+					shot_trail.visible = true;
+				}
+			}
+
+			// animate joints and connections
+			const frame_count = shot.world_keyframes.head.length;
+			var frame_idx = 0;
+			var anim_options = {	// options for GUI
+				paused: false,
+				speed: 100,
+				pause: function() {
+					this.paused = true;
+				},
+				play: function() {
+					this.paused = false;
+				},
+				step_size: 1,
+				step_forward: function() {
+					frame_idx += this.step_size;
+					if (frame_idx > frame_count - 1) {
+						frame_idx -= (frame_count - 1);
+					}
+				},
+				step_backward: function() {
+					frame_idx -= this.step_size;
+					if (frame_idx < 0) {
+						frame_idx = (frame_count - 1) - Math.abs(frame_idx);
+					}
+				}
+			};
+			
+			var joint_lines = [];
 			function animate() {
 				requestAnimationFrame(animate);
 
@@ -131,15 +188,31 @@
 					scene.add(joint_lines[i]);
 				}
 
-				if (frame_idx < frame_count-1) {
-					frame_idx++;
+				if (!anim_options.paused) {
+					frame_idx += anim_options.speed * clock.getDelta();
+					if (frame_idx > frame_count - 1) {
+						frame_idx = 0;
+					}
 				}
-				else {
-					frame_idx = 0;
-				}
-
 				renderer.render(scene, camera);
 			};
+
+			// setup GUI
+			var gui = new dat.GUI();
+
+			var anim = gui.addFolder(shot.classification);
+			anim.add(anim_options, 'speed', 0, 100).listen();
+			anim.add(anim_options, 'pause');
+			anim.add(anim_options, 'play');
+			anim.add(anim_options, 'step_size', 0, 10).listen();
+			anim.add(anim_options, 'step_forward');
+			anim.add(anim_options, 'step_backward');
+			anim.open();
+
+			var path = gui.addFolder('shot path');
+			path.add(shot_trail_options, 'hide');
+			path.add(shot_trail_options, 'show');
+			path.open();
 
 			animate();
 		</script>

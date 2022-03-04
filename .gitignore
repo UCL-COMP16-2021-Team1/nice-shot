@@ -9,10 +9,11 @@ data/
 textures/
 
 # Large files
-.mp4
+*.mp4
 
 # Virtual environments
 venv/
+env/
 
 # Javascript
 node_modules/

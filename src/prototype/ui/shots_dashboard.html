@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Nice Shot! - Results</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<h1>Nice Shot!</h1>
+<h2><i>Your Personal Tennis Trainer</i></h2>
+<h3>Extracted Shots</h3>
+<script src="https://ajax.aspnetcdn.com/ajax/jQuery/jquery-3.5.1.min.js"></script>
+<script src="setup.js"></script>
+<script src="downloadJSON.js"></script>
+<h4>Filter by shot</h4>
+<!-- make a button for the filter thing
+The filter tab will be solely with one button - I will make the css for this later -->
+<div id="filter"></div>
+<script>
+
+    function getShotDictionary() {
+        var dict = {};
+        for (var i = 0; i < shotCount; i++) {
+            if (dict[shots[i].classification] === undefined) {
+                dict[shots[i].classification] = 1;
+            } else {
+                dict[shots[i].classification] += 1;
+            }
+        }
+        return dict;
+    }
+
+    function createClassificationCheckbox() {
+        let checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.id = classifications[i] + "CB";
+        return checkbox;
+    }
+
+    function createClassificationLabel() {
+        let label = document.createElement("label");
+        label.htmlFor = classifications[i];
+        label.appendChild(document.createTextNode(classifications[i]));
+        return label;
+    }
+
+    function createClassificationDIV() {
+        let classificationDIV = document.createElement("div");
+        classificationDIV.appendChild(createClassificationCheckbox());
+        classificationDIV.appendChild(createClassificationLabel());
+        return classificationDIV;
+    }
+
+    var filterNode = document.getElementById("filter");
+    let dict = getShotDictionary();
+    var classifications = Object.keys(dict);
+
+    for (var i = 0; i < classifications.length; i++) {
+        filterNode.appendChild(createClassificationDIV());
+    }
+
+</script>
+<button type="submit" onclick="clearCheckboxes()">Clear</button>
+<button type="submit" onclick="confirmCheckboxes()">Done</button>
+<script>
+
+    function verifyCheckboxes() {
+        var shownClassifications = [];
+        for (var i = 0; i < classifications.length; i++) {
+            var items = document.getElementById(classifications[i] + "CB")
+            if (items.checked === true) shownClassifications.push(classifications[i]);
+        }
+        return shownClassifications;
+    }
+
+    function createShotSection(i) {
+        const shotDIV = document.createElement('div');
+        let img = document.createElement('img');
+        img.src = 'data/shot' + [i] + '.jpg'; //data/1865.png'; // Replace with thumbnail of the video. Either generate, or it's already loaded.
+        shotDIV.textContent = "Shot " + (i + 1) + ": " + shots[i].classification;
+        shotDIV.appendChild(document.createElement('br'));
+        shotDIV.appendChild(img);
+        return shotDIV;
+    }
+
+    function emptyNode(node) {
+        while (node.firstChild) {
+            node.removeChild(node.lastChild);
+        }
+    }
+
+    function clearCheckboxes() {
+        for (var i = 0; i < classifications.length; i++) {
+            document.getElementById(classifications[i] + "CB").checked = false;
+        }
+    }
+
+    function confirmCheckboxes() {
+        let shownClassifications = verifyCheckboxes();
+        const thumbnailDIV = document.getElementById("thumbnails");
+        emptyNode(thumbnailDIV);
+        for (var i = 0; i < shotCount; i++) {
+            if (!shownClassifications.includes(classifications[i])) {
+                break;
+            } else {
+                thumbnailDIV.appendChild(createShotSection(i));
+            }
+        }
+    }
+
+    // EACH IMAGE SHOULD BE A BUTTON TO GO TO THE OBSERVATION OF THE VIDEO.
+</script>
+<div id="thumbnails"></div>
+</body>
+</html>

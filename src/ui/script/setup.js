@@ -1,0 +1,4 @@
+// Setup
+$.ajaxSetup({
+    async: false
+});

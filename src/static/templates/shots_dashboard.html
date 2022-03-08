@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Nice Shot! - Results</title>
+    <link rel="stylesheet" type="text/css" href="{{url_for('static', filename='styles/styles.css')}}">
+</head>
+<body>
+<h1>Nice Shot!</h1>
+<h2><i>Your Personal Tennis Trainer</i></h2>
+<h3>Extracted Shots</h3>
+<script src="https://ajax.aspnetcdn.com/ajax/jQuery/jquery-3.5.1.min.js"></script>
+<script src="{{url_for('static', filename='script/setup.js')}}"></script>
+<h4>Filter by shot</h4>
+<div id="classes"></div>
+
+<form id="classCheckboxes" action="{{url_for('send_shots', json_path=file_name)}}" method="post">
+
+    <button type="submit">Done</button> <!-- should actually just reload the page -->
+</form>
+<button type="submit" onclick="clearCheckboxes()">Clear</button>
+<div id="thumbnails"></div>
+<script>
+    let shots, shot_classes, shown_classes, count, classifications;
+
+    shots = JSON.parse('{{shots | tojson | safe}}');
+    shot_classes = JSON.parse('{{shot_classes | tojson | safe}}');
+    shown_classes = JSON.parse('{{shown_classes | tojson | safe}}');
+    count = shots.length;
+    classifications = Object.keys(shot_classes);
+
+    function createClassCheckboxes(){
+
+        function classCheckbox(shot_class) {
+            let checkbox = document.createElement("input");
+            checkbox.type = "checkbox";
+            checkbox.id = "classCB";
+            checkbox.name = "classCB";
+            checkbox.value=shot_class;
+            if (shown_classes.includes(shot_class)){
+                checkbox.checked = true;
+            }
+            return checkbox;
+        }
+
+        function classLabel(shot_class){
+            let label = document.createElement("label");
+            label.htmlFor = shot_class;
+            label.appendChild(document.createTextNode(shot_class));
+            return label;
+        }
+
+        const classesContainer = document.getElementById("classCheckboxes");
+
+        for (let class_index = 0; class_index < classifications.length; class_index++){
+            let classContainer = document.createElement("div");
+            let shot_class = classifications[class_index];
+            classContainer.appendChild(classCheckbox(shot_class))
+            classContainer.appendChild(classLabel(shot_class))
+            classesContainer.appendChild(classContainer);
+        }
+    }
+
+    createClassCheckboxes();
+    console.log(classifications.length);
+    console.log("CLASSES");
+
+</script>
+<script>
+
+    function clearCheckboxes() {
+        document.getElementById("classCB").checked = false;
+        /*for (let i = 0; i < classifications.length; i++) {
+            document.getElementById(classifications[i] + "CB").checked = false; // do I need to give them separate IDs?
+        }*/
+    }
+
+    function displayShots(){
+
+        function createShotContainer(index){
+            const shotContainer = document.createElement("div");
+            let img = document.createElement("img");
+            img.src = "/display/shot" + index + ".jpg";
+            shotContainer.textContent = "Shot " + (index+1) + ": " + shots[index].classification;
+            shotContainer.appendChild(document.createElement("br"));
+            shotContainer.appendChild(img);
+            return shotContainer;
+        }
+
+        const thumbnailContainer = document.getElementById("thumbnails");
+        console.log(thumbnailContainer);
+        while (thumbnailContainer.firstChild) thumbnailContainer.removeChild(thumbnailContainer.lastChild); // empty node
+
+        for (let class_index = 0; class_index < classifications.length; class_index++){
+            if (shown_classes.includes(classifications[class_index])){
+                thumbnailContainer.appendChild(createShotContainer(class_index));
+            }
+        }
+
+    }
+
+    displayShots();
+
+</script>
+</body>
+</html>

@@ -9,6 +9,7 @@ textures/
 
 # Large files
 *.mp4
+shot-recognition/data/
 
 # Virtual environments
 venv/

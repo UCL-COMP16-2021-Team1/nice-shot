@@ -2,7 +2,7 @@ import numpy as np
 import tensorflow as tf
 
 model = tf.keras.models.load_model("cnn_recognition_model.h5")
-class_names = ['backhand', 'backhand2hands', 'backhand_slice', 'backhand_volley', 'flat_service', 'forehand_flat', 'forehand_openstands', 'forehand_slice', 'forehand_volley', 'kick_service', 'slice_service', 'smash']
+class_names = ['backhand', 'forehand', 'service', 'smash']
 
 def classify_shot(pose_frames):
     skeleton_img = pose_frames / np.abs(pose_frames).max()

@@ -31,7 +31,7 @@ def format_joints(landmarks):
         else:
             l = landmarks[i]
             joints.append([l.x, l.y, l.z])
-    return joints
+    return np.array(joints)
 
 def extract_pose_frames(cap):
     pose_frames = []
@@ -42,11 +42,11 @@ def extract_pose_frames(cap):
                 break
 
             results = pose.process(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
-            if results.pose_landmarks is None or results.pose_world_landmarks is None:
+            if results.pose_world_landmarks is None:
                 raise PoseNotFoundError("Pose could not be detected.")
 
             world_landmarks = results.pose_world_landmarks.landmark
             pose_frames.append(format_joints(world_landmarks))
 
-    return np.array(pose_frames)
+    return np.stack(pose_frames)
     

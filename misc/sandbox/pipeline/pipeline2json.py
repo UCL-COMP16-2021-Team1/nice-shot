@@ -35,14 +35,12 @@ def pipeline2json(video_path, out_path):
                 "start_frame_idx": int(start_t),
                 "end_frame_idx": int(end_t),
                 "classification": classification,
-                "timestamps": timestamps,
                 "world_keyframes": pose2keyframes(world_pose_frames),
                 "image_pose_frames": image_pose_frames.tolist()
-            } for ((start_t, end_t), classification, timestamps, world_pose_frames, image_pose_frames) 
+            } for ((start_t, end_t), classification, world_pose_frames, image_pose_frames) 
             in zip(
                 shot_analysis["intervals"], 
                 shot_analysis["classifications"], 
-                shot_analysis["timestamps"],
                 shot_analysis["world_poses"], 
                 shot_analysis["image_poses"]
             )

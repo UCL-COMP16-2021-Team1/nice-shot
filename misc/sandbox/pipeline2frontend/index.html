@@ -106,6 +106,7 @@
 			const geometry = new THREE.BufferGeometry().setFromPoints(points);
 			const material = new THREE.LineBasicMaterial( { color: 0xff00ff } );
 			const shot_trail = new THREE.Line( geometry, material );
+			shot_trail.visible = false;
 			scene.add(shot_trail)
 
 			var shot_trail_options = {
@@ -212,8 +213,8 @@
 			anim.open();
 
 			var path = gui.addFolder('shot path');
-			path.add(shot_trail_options, 'hide');
 			path.add(shot_trail_options, 'show');
+			path.add(shot_trail_options, 'hide');
 			path.open();
 
 			animate();

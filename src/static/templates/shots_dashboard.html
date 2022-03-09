@@ -12,9 +12,7 @@
 <script src="{{url_for('static', filename='script/setup.js')}}"></script>
 <h4>Filter by shot</h4>
 <div id="classes"></div>
-
-<form id="classCheckboxes" action="{{url_for('send_shots', json_path=file_name)}}" method="post">
-
+<form id="classCheckboxes" action="{{url_for('send_shots')}}" method="post">
     <button type="submit">Done</button> <!-- should actually just reload the page -->
 </form>
 <button type="submit" onclick="clearCheckboxes()">Clear</button>
@@ -95,7 +93,6 @@
                 thumbnailContainer.appendChild(createShotContainer(class_index));
             }
         }
-
     }
 
     displayShots();

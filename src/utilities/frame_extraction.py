@@ -2,12 +2,13 @@ import cv2
 import json
 from os.path import isdir, join
 from os import mkdir
+from . import DATA_FOLDER, SHOT_IMAGES_FOLDER
 
 
-DATA_FOLDER = 'data'
-VIDEO_FOLDER = join(DATA_FOLDER, 'videos')
-ANALYSIS_FOLDER = join(DATA_FOLDER, 'analysis_results')
-SHOT_IMAGES_FOLDER = 'static/images'
+#DATA_FOLDER = 'data'
+#VIDEO_FOLDER = join(DATA_FOLDER, 'videos')
+#ANALYSIS_FOLDER = join(DATA_FOLDER, 'analysis_results')
+#SHOT_IMAGES_FOLDER = 'static/images'
 
 
 def create_image_folder():
@@ -16,6 +17,7 @@ def create_image_folder():
 
 
 def analyse_frames(data: dict, cam):
+    global SHOT_IMAGES_FOLDER
     current_frame: int = 0
     shot_count: int = 0
     for shot in data['shots']:

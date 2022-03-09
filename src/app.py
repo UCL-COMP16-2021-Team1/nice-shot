@@ -2,15 +2,14 @@ from flask import Flask, request, render_template, redirect, url_for, flash
 import os
 import json
 from utilities.frame_extraction import create_images
-
-#from analysis_pipeline.json_writer import pipeline2json
-
-DATA_FOLDER = 'data/'
-ALLOWED_EXTENSIONS = {'mp4'}
+from os.path import join
+from utilities import video_name, json_path, VIDEO_FOLDER, ANALYSIS_FOLDER, ALLOWED_EXTENSIONS
+# from analysis_pipeline.json_writer import pipeline2json
 
 app = Flask(__name__, template_folder='static/templates', static_folder='static')
-app.config['UPLOAD FOLDER'] = DATA_FOLDER + 'videos'
-app.config['SHOT ANALYSIS'] = DATA_FOLDER + 'analysis_results'
+app.config['UPLOAD FOLDER'] = VIDEO_FOLDER
+app.config['SHOT ANALYSIS'] = ANALYSIS_FOLDER
+
 
 # Maybe add redirect codes if possible
 # Commented out pipeline code since it doesn't run on my computer
@@ -36,12 +35,14 @@ def upload_file():
         if file.filename == '' or not allowed_file(file.filename):
             return redirect(request.url)
         else:
-            json_path: str = os.path.join(app.config['SHOT ANALYSIS'], 'test_shot.json')
+            global json_path
+            print("THIS IS JSON PATH " + json_path)
+            json_path = os.path.join(app.config['SHOT ANALYSIS'], 'test_shot.json')
             file_path: str = os.path.join(app.config['UPLOAD FOLDER'], file.filename)
             file.save(file_path)
             #  pipeline2json(file_path, json_path)
             create_images(json_path, file_path)
-            return redirect(url_for('send_shots', json_path=json_path))
+            return redirect(url_for('send_shots'))
     return render_template("index.html")
 
 
@@ -63,8 +64,9 @@ def get_shown_classes(class_request, shot_classes) -> list:
     return shown_classes
 
 
-@app.route("/shots_dashboard/<path:json_path>", methods=["GET", "POST"])   # I think I can change the path route?
-def send_shots(json_path: str):
+@app.route("/shots_dashboard/", methods=["GET", "POST"])  # I think I can change the path route?
+def send_shots():
+    global video_name, json_path
     with open(json_path) as json_file:
         json_dict: dict = json.load(json_file)
         shots: list = json_dict.get('shots')
@@ -72,7 +74,6 @@ def send_shots(json_path: str):
     shown_classes: list = get_shown_classes(request, shot_classes)
     return render_template(
         'shots_dashboard.html',
-        file_name=json_path,
         shots=shots,
         shot_classes=shot_classes,
         shown_classes=shown_classes

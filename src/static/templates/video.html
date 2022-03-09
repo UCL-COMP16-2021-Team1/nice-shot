@@ -1,0 +1,22 @@
+<!DOCTYPE>
+<html>
+<head>
+    <title>Nice Shot! - Video Viewing</title>
+    <link rel="stylesheet" type="text/css" href="{{url_for('static', filename='styles/styles.css')}}">
+</head>
+<body>
+<h1>Nice Shot!</h1>
+<h2><i>Your Personal Tennis Trainer</i></h2>
+<!-- IF SOMETHING IS IN ONE FORMAT. I'LL DO THIS LATER -->
+<h3>Shot {{clip_index}} - {{shot_class}} </h3>
+<video width="640" height="480" controls>
+  <source src="{{video_url}}" type="video/mp4">
+Your browser does not support the video tag.
+</video>
+<!--Button for viewing the rest-->
+<form action="{{url_for('view3d', index=clip_index)}}">
+    <input type="hidden" name="index" value="{{clip_index}}">
+<button type="submit">View 3D Reconstruction</button>
+</form>
+</body>
+</html>

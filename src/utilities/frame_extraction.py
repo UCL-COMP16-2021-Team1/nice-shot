@@ -2,13 +2,7 @@ import cv2
 import json
 from os.path import isdir, join
 from os import mkdir
-from . import DATA_FOLDER, SHOT_IMAGES_FOLDER
-
-
-#DATA_FOLDER = 'data'
-#VIDEO_FOLDER = join(DATA_FOLDER, 'videos')
-#ANALYSIS_FOLDER = join(DATA_FOLDER, 'analysis_results')
-#SHOT_IMAGES_FOLDER = 'static/images'
+from .constants import DATA_FOLDER, STATIC_IMAGES
 
 
 def create_image_folder():
@@ -17,14 +11,14 @@ def create_image_folder():
 
 
 def analyse_frames(data: dict, cam):
-    global SHOT_IMAGES_FOLDER
+    global STATIC_IMAGES
     current_frame: int = 0
     shot_count: int = 0
     for shot in data['shots']:
         while True:
             _, frame = cam.read()
             if current_frame == shot['start_frame_idx']:
-                img_name = join(SHOT_IMAGES_FOLDER, f"shot{shot_count}.jpg")
+                img_name = join(STATIC_IMAGES, f"clip{shot_count}.jpg")
                 cv2.imwrite(img_name, frame)
                 current_frame += 1
                 shot_count += 1

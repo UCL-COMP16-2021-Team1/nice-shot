@@ -59,17 +59,11 @@
     }
 
     createClassCheckboxes();
-    console.log(classifications.length);
-    console.log("CLASSES");
-
 </script>
 <script>
 
     function clearCheckboxes() {
         document.getElementById("classCB").checked = false;
-        /*for (let i = 0; i < classifications.length; i++) {
-            document.getElementById(classifications[i] + "CB").checked = false; // do I need to give them separate IDs?
-        }*/
     }
 
     function displayShots(){
@@ -81,6 +75,23 @@
             shotContainer.textContent = "Shot " + (index+1) + ": " + shots[index].classification;
             shotContainer.appendChild(document.createElement("br"));
             shotContainer.appendChild(img);
+
+
+            // CREATES FORM
+
+            const formContainer = document.createElement("form");
+            formContainer.action = "/shot/video/" + index.toString();
+
+
+            const button = document.createElement("button");
+            button.type = "submit";
+            button.innerText = "View video";
+            button.text = "View video";
+            button.value = "View video";
+            formContainer.appendChild(button);
+            shotContainer.appendChild(formContainer);
+
+
             return shotContainer;
         }
 

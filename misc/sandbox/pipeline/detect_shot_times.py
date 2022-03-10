@@ -1,6 +1,5 @@
 import numpy as np
 from scipy import ndimage
-import matplotlib.pyplot as plt
 
 def detect_shot_times(left_wrist_frames, right_wrist_frames):
     lw_speed_x = np.gradient(left_wrist_frames[..., 0])
@@ -19,11 +18,12 @@ def detect_shot_times(left_wrist_frames, right_wrist_frames):
     # downsample for coarser reperesentation of swing speed
     downsample_factor = 4
     swing_speed = ndimage.zoom(swing_speed, 1/downsample_factor)
-    # smooth and normalise swing speed
+    # smooth swing speed
     swing_speed = ndimage.gaussian_filter(swing_speed, sigma=2)
-    swing_speed /= swing_speed.max()
 
-    shot_threshold = 0.5
+    # find shot threshold as half a standard deviation above the mean swing speed
+    shot_threshold = np.mean(swing_speed) + 0.5 * np.std(swing_speed)
+    
     # find shot times as zero-crossings of swing speed, offset by shot threshold
     shot_times = ((np.where(np.diff(np.sign(swing_speed-shot_threshold)))[0] + 1) * downsample_factor).tolist()
     if swing_speed[0] >= shot_threshold:

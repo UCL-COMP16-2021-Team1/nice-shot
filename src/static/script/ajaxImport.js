@@ -1,4 +1,3 @@
-// Setup
 $.ajaxSetup({
     async: false
 });

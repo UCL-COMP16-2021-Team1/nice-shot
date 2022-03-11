@@ -13,6 +13,8 @@ app.config['SHOT ANALYSIS'] = ANALYSIS_FOLDER
 app.config['STATIC VIDEOS'] = STATIC_VIDEOS
 app.config['STATIC IMAGES'] = STATIC_IMAGES
 
+app.debug = True
+
 
 # Maybe add redirect codes if possible
 # Commented out pipeline code since it doesn't run on my computer

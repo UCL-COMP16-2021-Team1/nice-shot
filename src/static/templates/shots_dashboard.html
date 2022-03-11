@@ -12,9 +12,7 @@
 <script src="{{url_for('static', filename='script/setup.js')}}"></script>
 <h4>Filter by shot</h4>
 <div id="classes"></div>
-
-<form id="classCheckboxes" action="{{url_for('send_shots', json_path=file_name)}}" method="post">
-
+<form id="classCheckboxes" action="{{url_for('send_shots')}}" method="post">
     <button type="submit">Done</button> <!-- should actually just reload the page -->
 </form>
 <button type="submit" onclick="clearCheckboxes()">Clear</button>
@@ -61,17 +59,11 @@
     }
 
     createClassCheckboxes();
-    console.log(classifications.length);
-    console.log("CLASSES");
-
 </script>
 <script>
 
     function clearCheckboxes() {
         document.getElementById("classCB").checked = false;
-        /*for (let i = 0; i < classifications.length; i++) {
-            document.getElementById(classifications[i] + "CB").checked = false; // do I need to give them separate IDs?
-        }*/
     }
 
     function displayShots(){
@@ -83,6 +75,23 @@
             shotContainer.textContent = "Shot " + (index+1) + ": " + shots[index].classification;
             shotContainer.appendChild(document.createElement("br"));
             shotContainer.appendChild(img);
+
+
+            // CREATES FORM
+
+            const formContainer = document.createElement("form");
+            formContainer.action = "/shot/video/" + index.toString();
+
+
+            const button = document.createElement("button");
+            button.type = "submit";
+            button.innerText = "View video";
+            button.text = "View video";
+            button.value = "View video";
+            formContainer.appendChild(button);
+            shotContainer.appendChild(formContainer);
+
+
             return shotContainer;
         }
 
@@ -95,7 +104,6 @@
                 thumbnailContainer.appendChild(createShotContainer(class_index));
             }
         }
-
     }
 
     displayShots();

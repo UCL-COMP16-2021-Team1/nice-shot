@@ -1,9 +1,8 @@
-from flask import Flask, request, render_template, redirect, url_for, flash
+from flask import Flask, request, render_template, redirect, url_for
 import os
 import json
 from utilities.frame_extraction import create_images
 from utilities import create_clip, create_images
-from os.path import join
 from utilities import file_path, json_path, ANALYSIS_FOLDER, ALLOWED_EXTENSIONS, STATIC_VIDEOS, STATIC_IMAGES
 # from analysis_pipeline.json_writer import pipeline2json
 
@@ -60,14 +59,6 @@ def get_classes(shots: list) -> dict:
     return classes
 
 
-def get_shown_classes(class_request, shot_classes) -> list:
-    if class_request.method == "POST":
-        shown_classes: list = class_request.form.getlist("classCB")
-    else:
-        shown_classes: list = list(shot_classes.keys())
-    return shown_classes
-
-
 @app.route("/shots_dashboard/", methods=["GET", "POST"])  # I think I can change the path route?
 def send_shots():
     global json_path
@@ -75,7 +66,7 @@ def send_shots():
         json_dict: dict = json.load(json_file)
         shots: list = json_dict.get('shots')
     shot_classes: dict = get_classes(shots)
-    shown_classes: list = get_shown_classes(request, shot_classes)
+    shown_classes: list = list(shot_classes.keys())
     return render_template(
         'shots_dashboard.html',
         shots=shots,

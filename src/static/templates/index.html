@@ -1,17 +1,19 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <title>Tennis Trainer Application</title>
-        <link rel="stylesheet" type="text/css" href="{{url_for('static', filename='styles/styles.css')}}">
-    </head>
-    <body>
-        <h1>Nice Shot!</h1>
-        <h2><i>Your Personal Tennis Trainer</i></h2>
-        <p>Welcome to the <i>Nice Shot!</i> tennis trainer application, which serves to analyse your aptitude at performing tennis shots!</p>
-        <p>To get started, record yourself performing shots of your liking, and upload the resulting video below:</p>
-        <form  method=post enctype=multipart/form-data>
-            <input type=file name=file>
-            <input type=submit value=Upload>
-        </form>
-    </body>
+<head>
+    <meta charset="utf-8">
+    <title>Tennis Trainer Application</title>
+    <link rel="stylesheet" type="text/css" href="{{url_for('static', filename='styles/styles.css')}}">
+    <script src="https://unpkg.com/vue@3"></script>
+</head>
+<body>
+	<div id="body"><heading></heading></div>
+    <p>Welcome to the <i>Nice Shot!</i> tennis trainer application, which serves to analyse your aptitude at performing tennis shots!</p>
+    <p>To get started, record yourself performing shots of your liking, and upload the resulting video below:</p>
+    <form  method=post enctype=multipart/form-data>
+        <input type=file name=file>
+        <input type=submit value=Upload>
+    </form>
+</body>
+<script type="module" src="{{url_for('static', filename='script/body.js')}}"></script>
 </html>

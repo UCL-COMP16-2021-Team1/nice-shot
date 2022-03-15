@@ -1,113 +1,96 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="utf-8">
     <title>Nice Shot! - Results</title>
     <link rel="stylesheet" type="text/css" href="{{url_for('static', filename='styles/styles.css')}}">
+    <script src="https://unpkg.com/vue@3"></script>
+    <script src="https://ajax.aspnetcdn.com/ajax/jQuery/jquery-3.5.1.min.js"></script>
+    <script src="{{url_for('static', filename='script/ajaxImport.js')}}"></script>
 </head>
 <body>
-<h1>Nice Shot!</h1>
-<h2><i>Your Personal Tennis Trainer</i></h2>
-<h3>Extracted Shots</h3>
-<script src="https://ajax.aspnetcdn.com/ajax/jQuery/jquery-3.5.1.min.js"></script>
-<script src="{{url_for('static', filename='script/setup.js')}}"></script>
-<h4>Filter by shot</h4>
-<div id="classes"></div>
-<form id="classCheckboxes" action="{{url_for('send_shots')}}" method="post">
-    <button type="submit">Done</button> <!-- should actually just reload the page -->
-</form>
-<button type="submit" onclick="clearCheckboxes()">Clear</button>
-<div id="thumbnails"></div>
-<script>
-    let shots, shot_classes, shown_classes, count, classifications;
+	<div id="body">
+        <heading></heading>
+    </div>
+    <h3>Extracted Shots</h3>
+    <h4>Filter by shot</h4>
 
-    shots = JSON.parse('{{shots | tojson | safe}}');
-    shot_classes = JSON.parse('{{shot_classes | tojson | safe}}');
-    shown_classes = JSON.parse('{{shown_classes | tojson | safe}}');
-    count = shots.length;
-    classifications = Object.keys(shot_classes);
+    <script>
+        /* Data extraction */
+        let shots, shot_classes, shown_classes, classifications;
 
-    function createClassCheckboxes(){
+        shots = JSON.parse('{{shots | tojson | safe}}');
+        shot_classes = JSON.parse('{{shot_classes | tojson | safe}}');
+        shown_classes = JSON.parse('{{shown_classes | tojson | safe}}');
+        classifications = Object.keys(shot_classes);
+    </script>
 
-        function classCheckbox(shot_class) {
-            let checkbox = document.createElement("input");
-            checkbox.type = "checkbox";
-            checkbox.id = "classCB";
-            checkbox.name = "classCB";
-            checkbox.value=shot_class;
-            if (shown_classes.includes(shot_class)){
-                checkbox.checked = true;
+    <div id="dashboard">
+        {% raw %}
+        <div v-for="item in classes">
+            <input :id="item.id" type="checkbox" :name="item.text" :value="item.text" v-model="checkedShots">
+            <label :for="item.id">{{item.text}}</label>
+        </div>
+        <h4>Shots</h4>
+        <div v-for="shot in shotList">
+            <div v-if="isInList(shot.class, checkedShots)">
+                {{shot.text}}
+                <br>
+                <img :src="shot.src">
+                <form :action="shot.action">
+                    <button type="submit">View video</button>
+                </form>
+            </div>
+        </div>
+        {% endraw %}
+    </div>
+    
+    <script type="module">
+        /* Checklist application */
+        Vue.createApp({
+            setup(){
+
+                function createShotClassList(){
+                    let list = [];
+                    for (let classIndex = 0; classIndex < classifications.length; classIndex++){
+                        list.push({id: classIndex, text: classifications[classIndex]});
+                    }
+                    return Vue.ref(list);
+                }
+
+                function createShotList(){
+                    let list = [];
+                    for (let shotIndex = 0; shotIndex < shots.length; shotIndex++){
+                        console.log(shots[shotIndex].classification);
+                        list.push({
+                            id: shotIndex,
+                            class: shots[shotIndex].classification,
+                            text: 'Shot ' + (shotIndex+1).toString() + ': ' + shots[shotIndex].classification,
+                            src: '/display/shot' + shotIndex.toString() + '.jpg',
+                            action: '/shot/video/' + shotIndex.toString()
+                        })
+                    }
+                    return Vue.ref(list);
+                }
+
+                const checkedShots = Vue.ref(classifications);
+                const shotList = createShotList();
+                const classes = createShotClassList();
+
+                function isInList(item, list){
+                    return list.includes(item);
+                }
+
+                return {
+                    checkedShots,
+                    shotList,
+                    classes,
+                    isInList
+                }
             }
-            return checkbox;
-        }
+        }).mount("#dashboard");
 
-        function classLabel(shot_class){
-            let label = document.createElement("label");
-            label.htmlFor = shot_class;
-            label.appendChild(document.createTextNode(shot_class));
-            return label;
-        }
-
-        const classesContainer = document.getElementById("classCheckboxes");
-
-        for (let class_index = 0; class_index < classifications.length; class_index++){
-            let classContainer = document.createElement("div");
-            let shot_class = classifications[class_index];
-            classContainer.appendChild(classCheckbox(shot_class))
-            classContainer.appendChild(classLabel(shot_class))
-            classesContainer.appendChild(classContainer);
-        }
-    }
-
-    createClassCheckboxes();
-</script>
-<script>
-
-    function clearCheckboxes() {
-        document.getElementById("classCB").checked = false;
-    }
-
-    function displayShots(){
-
-        function createShotContainer(index){
-            const shotContainer = document.createElement("div");
-            let img = document.createElement("img");
-            img.src = "/display/shot" + index + ".jpg";
-            shotContainer.textContent = "Shot " + (index+1) + ": " + shots[index].classification;
-            shotContainer.appendChild(document.createElement("br"));
-            shotContainer.appendChild(img);
-
-
-            // CREATES FORM
-
-            const formContainer = document.createElement("form");
-            formContainer.action = "/shot/video/" + index.toString();
-
-
-            const button = document.createElement("button");
-            button.type = "submit";
-            button.innerText = "View video";
-            button.text = "View video";
-            button.value = "View video";
-            formContainer.appendChild(button);
-            shotContainer.appendChild(formContainer);
-
-
-            return shotContainer;
-        }
-
-        const thumbnailContainer = document.getElementById("thumbnails");
-        console.log(thumbnailContainer);
-        while (thumbnailContainer.firstChild) thumbnailContainer.removeChild(thumbnailContainer.lastChild); // empty node
-
-        for (let class_index = 0; class_index < classifications.length; class_index++){
-            if (shown_classes.includes(classifications[class_index])){
-                thumbnailContainer.appendChild(createShotContainer(class_index));
-            }
-        }
-    }
-
-    displayShots();
-
-</script>
+    </script>
 </body>
+<script type="module" src="{{url_for('static', filename='script/body.js')}}"></script>
 </html>

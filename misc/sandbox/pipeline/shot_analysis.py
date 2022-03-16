@@ -1,8 +1,8 @@
-import cv2
 import mediapipe as mp
 import numpy as np
 from scipy import ndimage
 from classify_shot import classify_shot
+import copy
 
 mp_pose = mp.solutions.pose
 mp_drawing = mp.solutions.drawing_utils
@@ -17,7 +17,7 @@ def detect_shot_times(lw_speed, rw_speed):
     swing_speed = ndimage.gaussian_filter(swing_speed, sigma=2)
 
     # find shot threshold as half a standard deviation above the mean swing speed
-    shot_threshold = np.mean(swing_speed) + 0.5 * np.std(swing_speed)
+    shot_threshold = np.median(swing_speed) + 0.5 * np.std(swing_speed)
     
     # find shot times as zero-crossings of swing speed, offset by shot threshold
     shot_times = ((np.where(np.diff(np.sign(swing_speed-shot_threshold)))[0] + 1) * downsample_factor).tolist()
@@ -38,7 +38,7 @@ def calc_joint_speed(frames):
     return np.sqrt(speed_x**2 + speed_y**2 + speed_z**2)
 
 def analyse_shots(joint_frames):
-    lw_speed, rw_speed = calc_joint_speed(joint_frames["left_wrist"]), calc_joint_speed(joint_frames["right_wrist"])
+    lw_speed, rw_speed = calc_joint_speed(np.array(joint_frames["left_wrist"])), calc_joint_speed(np.array(joint_frames["right_wrist"]))
     shot_intervals = detect_shot_times(lw_speed, rw_speed)
 
     shot_analysis = {}
@@ -48,9 +48,9 @@ def analyse_shots(joint_frames):
 
     for start_t, end_t in shot_intervals:
         shot_analysis["intervals"].append((start_t, end_t))
-        shot_joint_frames = joint_frames.copy()
-        for j in shot_joint_frames:
-            j = j[start_t:end_t+1]
+        shot_joint_frames = copy.deepcopy(joint_frames)
+        for joint in shot_joint_frames.keys():
+            shot_joint_frames[joint] = shot_joint_frames[joint][start_t:end_t+1]
         shot_analysis["joint_frames"].append(shot_joint_frames)
         shot = classify_shot(shot_joint_frames)[0]
         shot_analysis["classifications"].append(shot)

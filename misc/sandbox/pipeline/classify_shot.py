@@ -23,6 +23,7 @@ def classify_shot(joint_frames):
     ]
     pose_frames = [np.array(joint_frames[joint]) for joint in ordered_joints]
     pose_img = np.stack(pose_frames)
+    pose_img = pose_img.swapaxes(0,1)
 
     skeleton_img = pose_img / np.abs(pose_img).max()
     skeleton_img = (skeleton_img+1)*127.5

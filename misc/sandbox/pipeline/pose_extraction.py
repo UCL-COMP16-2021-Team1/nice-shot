@@ -53,28 +53,28 @@ def extract_joint_frames(frames):
 
     if len(pose_frames) == 0:
         raise PoseNotFoundError("Pose could not be detected.")
-    # pad pose frames to match total frames in video
+    # pad pose frames at start to match total frames in video
     while len(pose_frames) < len(frames):
         pose_frames.insert(0, pose_frames[0])
         mp_landmarks.insert(0, mp_landmarks[0])
     
-    pose_image = np.stack(pose_frames)
+    pose_img = np.stack(pose_frames)
     joint_frames = {
-        "head": pose_image[:,0,...].tolist(),
-        "left_elbow": pose_image[:,1,...].tolist(),
-        "left_foot": pose_image[:,2,...].tolist(),
-        "left_wrist": pose_image[:,3,...].tolist(),
-        "left_hip": pose_image[:,4,...].tolist(),
-        "left_knee": pose_image[:,5,...].tolist(),
-        "left_shoulder": pose_image[:,6,...].tolist(),
-        "neck": pose_image[:,7,...].tolist(),
-        "right_elbow": pose_image[:,8,...].tolist(),
-        "right_foot": pose_image[:,9,...].tolist(),
-        "right_wrist": pose_image[:,10,...].tolist(),
-        "right_hip": pose_image[:,11,...].tolist(),
-        "right_knee": pose_image[:,12,...].tolist(),
-        "right_shoulder": pose_image[:,13,...].tolist(),
-        "torso": pose_image[:,14,...].tolist()
+        "head": pose_img[:,0,...].tolist(),
+        "left_elbow": pose_img[:,1,...].tolist(),
+        "left_foot": pose_img[:,2,...].tolist(),
+        "left_wrist": pose_img[:,3,...].tolist(),
+        "left_hip": pose_img[:,4,...].tolist(),
+        "left_knee": pose_img[:,5,...].tolist(),
+        "left_shoulder": pose_img[:,6,...].tolist(),
+        "neck": pose_img[:,7,...].tolist(),
+        "right_elbow": pose_img[:,8,...].tolist(),
+        "right_foot": pose_img[:,9,...].tolist(),
+        "right_wrist": pose_img[:,10,...].tolist(),
+        "right_hip": pose_img[:,11,...].tolist(),
+        "right_knee": pose_img[:,12,...].tolist(),
+        "right_shoulder": pose_img[:,13,...].tolist(),
+        "torso": pose_img[:,14,...].tolist()
     }
     return joint_frames, mp_landmarks
     

@@ -1,33 +1,22 @@
 import cv2
 import json
 import sys
-from analyse_video import analyse_video
+import numpy as np
+from pose_extraction import extract_joint_frames
 
-def pose2keyframes(pose):
-    keyframes = {
-        "head": pose[:,0,...].tolist(),
-        "left_elbow": pose[:,1,...].tolist(),
-        "left_foot": pose[:,2,...].tolist(),
-        "left_wrist": pose[:,3,...].tolist(),
-        "left_hip": pose[:,4,...].tolist(),
-        "left_knee": pose[:,5,...].tolist(),
-        "left_shoulder": pose[:,6,...].tolist(),
-        "neck": pose[:,7,...].tolist(),
-        "right_elbow": pose[:,8,...].tolist(),
-        "right_foot": pose[:,9,...].tolist(),
-        "right_wrist": pose[:,10,...].tolist(),
-        "right_hip": pose[:,11,...].tolist(),
-        "right_knee": pose[:,12,...].tolist(),
-        "right_shoulder": pose[:,13,...].tolist(),
-        "torso": pose[:,14,...].tolist()
-    }
-    return keyframes
-
-# pipeline entry point
-def pipeline2json(video_path, out_path):
+def analyse_video(video_path, out_json_path, out_annotated_vid_path=None):
     cap = cv2.VideoCapture(video_path)
-    shot_analysis = analyse_video(cap)
+    frames = []
+    while cap.isOpened():
+        ret, frame = cap.read()
+        if not ret:
+            break
+        frames.append(frame)
     cap.release()
+    frames = np.stack(frames)
+
+    joint_frames = extract_joint_frames(frames)
+    shot_analysis = analyse_shots(frames)
     shots_json = {
         "shots": 
         [

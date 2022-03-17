@@ -16,7 +16,7 @@ def detect_shot_times(lw_speed, rw_speed):
     # smooth swing speed
     swing_speed = ndimage.gaussian_filter(swing_speed, sigma=2)
 
-    # find shot threshold as half a standard deviation above the mean swing speed
+    # find shot threshold as half a standard deviation above the median swing speed
     shot_threshold = np.median(swing_speed) + 0.5 * np.std(swing_speed)
     
     # find shot times as zero-crossings of swing speed, offset by shot threshold
@@ -52,7 +52,7 @@ def analyse_shots(joint_frames):
         for joint in shot_joint_frames.keys():
             shot_joint_frames[joint] = shot_joint_frames[joint][start_t:end_t+1]
         shot_analysis["joint_frames"].append(shot_joint_frames)
-        shot = classify_shot(shot_joint_frames)[0]
-        shot_analysis["classifications"].append(shot)
+        classification = classify_shot(shot_joint_frames)
+        shot_analysis["classifications"].append(classification)
 
     return shot_analysis

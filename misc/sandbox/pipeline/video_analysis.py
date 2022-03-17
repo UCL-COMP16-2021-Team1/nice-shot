@@ -4,11 +4,14 @@ import sys
 import mediapipe as mp
 import numpy as np
 from os.path import join
-from pose_extraction import extract_joint_frames
+from pose_extraction import extract_joint_frames, PoseNotFoundError
 from shot_analysis import analyse_shots
 
 mp_pose = mp.solutions.pose
 mp_drawing = mp.solutions.drawing_utils
+
+class AnalysisFailedError(Exception):
+    pass
 
 def analyse_video(video_path, out_dir):
     cap = cv2.VideoCapture(video_path)
@@ -20,9 +23,14 @@ def analyse_video(video_path, out_dir):
             break
         frames.append(frame)
     cap.release()
-    frames = np.stack(frames)
+    if len(frames) == 0:
+        raise AnalysisFailedError("Video analysis failed because no frames could be read from the video.")
 
-    joint_frames, mp_landmarks = extract_joint_frames(frames)
+    try:
+        joint_frames, mp_landmarks = extract_joint_frames(frames)
+    except PoseNotFoundError:
+        raise AnalysisFailedError("Video analysis failed because no pose could be detected.")
+
     shot_analysis = analyse_shots(joint_frames)
     analysis_json = {
         "fps": fps,
@@ -32,8 +40,9 @@ def analyse_video(video_path, out_dir):
                 "start_frame_idx": int(start_t),
                 "end_frame_idx": int(end_t),
                 "classification": classification,
+                "confidence": float(confidence),
                 "joint_frames": shot_joint_frames
-            } for ((start_t, end_t), classification, shot_joint_frames) 
+            } for ((start_t, end_t), (classification, confidence), shot_joint_frames) 
             in zip(
                 shot_analysis["intervals"], 
                 shot_analysis["classifications"], 
@@ -49,7 +58,11 @@ def analyse_video(video_path, out_dir):
         start_t, end_t = shot_analysis["intervals"][i]
         for j in range(start_t, end_t+1):
             mp_drawing.draw_landmarks(annotated_frames[j], mp_landmarks[j], mp_pose.POSE_CONNECTIONS)
-            cv2.putText(annotated_frames[j], "Shot: "+shot_analysis["classifications"][i], (10,100), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2, cv2.LINE_AA)
+            classification, confidence = shot_analysis["classifications"][i]
+            text = f"{classification} ({str(round(100*confidence, 2))}%)"
+            text_pos = (50, 70)
+            cv2.putText(annotated_frames[j], text, text_pos, cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 8, cv2.LINE_AA)  # black outline
+            cv2.putText(annotated_frames[j], text, text_pos, cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv2.LINE_AA)
             
     video_out = cv2.VideoWriter(join(out_dir, "annotated_video.mp4"), -1, fps, (width, height))
     for f in annotated_frames:

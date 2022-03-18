@@ -32,13 +32,14 @@ def detect_shot_times(lw_speed, rw_speed):
     return shot_intervals
 
 def calc_joint_speed(frames):
-    speed_x = np.gradient(frames[..., 0])
-    speed_y = np.gradient(frames[..., 1])
-    speed_z = np.gradient(frames[..., 2])
+    frames_np = np.array(frames)
+    speed_x = np.gradient(frames_np[..., 0])
+    speed_y = np.gradient(frames_np[..., 1])
+    speed_z = np.gradient(frames_np[..., 2])
     return np.sqrt(speed_x**2 + speed_y**2 + speed_z**2)
 
 def analyse_shots(joint_frames):
-    lw_speed, rw_speed = calc_joint_speed(np.array(joint_frames["left_wrist"])), calc_joint_speed(np.array(joint_frames["right_wrist"]))
+    lw_speed, rw_speed = calc_joint_speed(joint_frames["left_wrist"]), calc_joint_speed(joint_frames["right_wrist"])
     shot_intervals = detect_shot_times(lw_speed, rw_speed)
 
     shot_analysis = {}

@@ -6,6 +6,7 @@ import numpy as np
 from os.path import join
 from pose_extraction import extract_joint_frames, PoseNotFoundError
 from shot_analysis import analyse_shots
+from pose2bvh import pose2bvh
 
 mp_pose = mp.solutions.pose
 mp_drawing = mp.solutions.drawing_utils
@@ -50,7 +51,9 @@ def analyse_video(video_path, out_dir):
             )
         ]
     }
-    json.dump(analysis_json, open(join(out_dir, "shot_analysis.json"), "w"), indent=2)
+    json_file = open(join(out_dir, "shot_analysis.json"), "w")
+    json.dump(analysis_json, json_file, indent=2)
+    json_file.close()
 
     annotated_frames = frames.copy()
     height, width, _ = annotated_frames[0].shape
@@ -68,6 +71,8 @@ def analyse_video(video_path, out_dir):
     for f in annotated_frames:
         video_out.write(f)
     video_out.release()
+
+    pose2bvh(joint_frames, fps)
     
 
 if __name__ == "__main__":

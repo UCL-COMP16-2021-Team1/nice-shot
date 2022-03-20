@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template, redirect
+from flask import Flask, request, render_template, redirect, url_for
 import os
 import json
 from utilities import ANALYSIS_FOLDER, ALLOWED_EXTENSIONS
@@ -18,14 +18,19 @@ def allowed_file(file_name: str):
            file_name.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
-@app.route('/', methods=['GET', 'POST'])
+@app.route('/', methods=['GET'])
+def home():
+    return render_template("index.html")
+
+@app.route('/upload', methods=['GET', 'POST'])
 def upload_file():
     if request.method == 'POST':
+        print(request.files)
         if 'file' not in request.files:
-            return redirect(request.url)
+            return redirect(url_for("home"))
         file = request.files['file']
         if file.filename == '' or not allowed_file(file.filename):
-            return redirect(request.url)
+            return redirect(url_for("home"))
 
         hasher = hashlib.sha1(str(file.filename).encode('utf-8') + str(time.time()).encode('utf-8'))
         analysis_id = str(hasher.hexdigest()[:10])
@@ -37,10 +42,11 @@ def upload_file():
         analyse_video(video_path, analysis_dir)
         os.remove(video_path)
 
-        return redirect(f"/{analysis_id}/")
-    return render_template("index.html")
+        #return redirect(f"/{analysis_id}/")
+        redirect(url_for("home"))
+    return redirect(url_for("home"))
 
-
+"""
 def get_classes(shots: list) -> dict:
     classes: dict = {}
     for index in range(len(shots)):
@@ -66,7 +72,7 @@ def send_shots(analysis_id: str):
         shown_classes=shown_classes
     )
 
-"""
+
 @app.route("/<analysis_id>/view?index=<int:index>", methods=['GET', 'POST'])
 def view_shot_video(analysis_id: str, index: int):
     json_path = os.path.join(app.config['SHOT ANALYSIS'], analysis_id, "shot_analysis.json")

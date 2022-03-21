@@ -20,7 +20,7 @@
     </head>
     <body class="text-white bg-dark">
         <header>
-            <div class="navbar navbar-dark bg-dark shadow-sm">
+            <div class="navbar navbar-dark bg-dark shadow-lg">
                 <div class="container">
                     <a href="#" class="navbar-brand d-flex align-items-center" style="font-family: 'Racing Sans One', cursive;"><h3>Nice Shot!</h3></a>
                     <a href="/" class="btn text-light btn-outline-secondary"><i class="bi bi-house"></i> <strong>Home</strong></a>
@@ -29,19 +29,31 @@
         </header>
 
         <main>
-            <section class="py-5 text-center container">
-                <video controls>
+            <section class="text-center container py-3">
+                <video style="border: 1px solid #6c757d;" controls>
                     <source src="{{ annotated_vid_url }}" type="video/mp4">
                 </video>
             </section>
-          
-            <div class="album py-5 bg-dark">
-                <div class="container">
 
+            <div class="album bg-dark">
+                <div class="container">
+                    <div class="d-flex justify-content-start py-1">
+                        <div class="p-2"><h3>View shots</h3></div>
+                        <div class="dropdown p-2">
+                            <button class="btn dropdown-toggle text-light" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false" style="background-color: #ce4b00 !important;">
+                                {{ filter }}
+                            </button>
+                            <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                            {% for class in classes %}
+                                <li><a class="dropdown-item" href="/{{ analysis_id }}/{{ class }}">{{ class }}</a></li>
+                            {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
                     <div  class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3">
                     {% for classification, url in shots %}
                         <div class="col">
-                            <div class="card shadow-sm bg-dark">
+                            <div class="card shadow-lg bg-dark">
                                 <div class="card-body bg-dark">
                                     <p class="card-text"><strong>{{ classification }}</strong></p>
                                     <video controls>

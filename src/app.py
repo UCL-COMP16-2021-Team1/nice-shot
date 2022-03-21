@@ -23,6 +23,7 @@ def allowed_file(file_name: str):
 def home():
     return render_template("index.html")
 
+
 @app.route('/upload', methods=['GET', 'POST'])
 def upload_file():
     if request.method == 'POST':
@@ -42,72 +43,63 @@ def upload_file():
         analyse_video(video_path, analysis_dir)
         os.remove(video_path)
 
-        #return redirect(f"/{analysis_id}/")
-        redirect(url_for("home"))
+        return redirect(f"/{analysis_id}/")
     return redirect(url_for("home"))
 
-@app.route("/<analysis_id>", methods=["GET", "POST"])
-def send_shots(analysis_id: str):
+
+def view_shots(analysis_id: str, class_filter: str):
     json_path = os.path.join(app.config['SHOT_ANALYSIS'], analysis_id, "shot_analysis.json")
     with open(json_path) as json_file:
         shot_analysis = json.load(json_file)
     shots = []
+    classes = set()
+    if class_filter != "all":
+        classes.add("all")
     for i in range(len(shot_analysis["shots"])):
         shot = shot_analysis["shots"][i]
         classification = shot["classification"]
+        if classification != class_filter:
+            classes.add(classification)
+        if class_filter != "all" and classification != class_filter:
+            continue
         clip_path = f"analysis_results/{analysis_id}/{i}{classification}.mp4"
         url = url_for('static', filename=clip_path)
         shots.append((classification, url))
     annotated_vid_path = f"analysis_results/{analysis_id}/annotated_video.mp4"
-    return render_template("shots_dashboard.html", shots=shots, annotated_vid_url=url_for('static', filename=annotated_vid_path))
-
-"""
-def get_classes(shots: list) -> dict:
-    classes: dict = {}
-    for index in range(len(shots)):
-        if classes.get(shots[index]['classification']) is None:
-            classes[shots[index]['classification']] = 1
-        else:
-            classes[shots[index]['classification']] += 1
-    return classes
+    classes = list(classes)
+    classes.sort()
+    return render_template("shots_dashboard.html", shots=shots, annotated_vid_url=url_for('static', filename=annotated_vid_path), classes=classes, filter=class_filter, analysis_id=analysis_id)
 
 
-@app.route("/<analysis_id>/", methods=["GET", "POST"])
-def send_shots(analysis_id: str):
+@app.route("/<analysis_id>", methods=["GET"])
+def view_analysis(analysis_id: str):
+    return view_shots(analysis_id, "all")
+
+
+@app.route("/<analysis_id>/<class_filter>", methods=["GET"])
+def view_filtered_analysis(analysis_id: str, class_filter: str):
+    if class_filter not in ["forehand", "backhand", "smash", "service"]:
+        return redirect(url_for("view_analysis", analysis_id=analysis_id))
+    return view_shots(analysis_id, class_filter)
+
+
+@app.route("/get_analysis?id=<analysis_id>?filter=<class_filter>", methods=["GET"])
+def get_filtered_analysis_json(analysis_id: str, class_filter: str):
     json_path = os.path.join(app.config['SHOT_ANALYSIS'], analysis_id, "shot_analysis.json")
     with open(json_path) as json_file:
-        json_dict: dict = json.load(json_file)
-        shots: list = json_dict.get('shots')
-    shot_classes: dict = get_classes(shots)
-    shown_classes: list = list(shot_classes.keys())
-    return render_template(
-        'shots_dashboard.html',
-        shots=shots,
-        shot_classes=shot_classes,
-        shown_classes=shown_classes
-    )
+        shot_analysis = json.load(json_file)
+    if class_filter not in ["forehand", "backhand", "smash", "service"]:
+        return shot_analysis
+    for i in range(len(shot_analysis['shots'])):
+        if shot_analysis['shots'][i]['classification'] != class_filter:
+            shot_analysis['shots'].pop(i)
+    return shot_analysis
 
 
-@app.route("/<analysis_id>/view?index=<int:index>", methods=['GET', 'POST'])
-def view_shot_video(analysis_id: str, index: int):
-    json_path = os.path.join(app.config['SHOT ANALYSIS'], analysis_id, "shot_analysis.json")
-    video_path = os.path.join(app.config['SHOT ANALYSIS'], analysis_id, "annotated_video.mp4")
-    with open(json_path) as json_file:
-        json_dict: dict = json.load(json_file)
-        classification: str = json_dict.get('shots')[index].get('classification')
-    create_clip(json_path, index, file_path)
-    return render_template("video.html", threeD=False, clip_index=(index+1), shot_class=classification, video_url=url_for(filename=file_path))
+@app.route("/get_analysis?id=<analysis_id>")
+def get_analysis_json(analysis_id: str):
+    return get_filtered_analysis_json(analysis_id, "all")
 
-
-@app.route("/<analysis_id>/shot/3D/<int:index>", methods=['GET', 'POST'])
-def view3d(analysis_id: str, index: int):
-    json_path = os.path.join(app.config['SHOT ANALYSIS'], analysis_id, "shot_analysis.json")
-    index: int = index-1
-    with open(json_path) as json_file:
-        json_dict: dict = json.load(json_file)
-        shot_data: dict = json_dict['shots'][index]
-    return render_template("3d.html", shot_data=shot_data)
-"""
 
 if __name__ == '__main__':
     app.run()

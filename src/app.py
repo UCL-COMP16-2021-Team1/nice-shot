@@ -1,3 +1,4 @@
+from fileinput import filename
 from flask import Flask, request, render_template, redirect, url_for
 import os
 import json
@@ -10,12 +11,12 @@ import time
 app = Flask(__name__, template_folder='static/templates', static_folder='static')
 app.config['SHOT_ANALYSIS'] = ANALYSIS_FOLDER
 
-app.debug = True
+app.debug = False
 
 
 def allowed_file(file_name: str):
     return '.' in file_name and \
-           file_name.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+        file_name.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
 @app.route('/', methods=['GET'])
@@ -25,7 +26,6 @@ def home():
 @app.route('/upload', methods=['GET', 'POST'])
 def upload_file():
     if request.method == 'POST':
-        print(request.files)
         if 'file' not in request.files:
             return redirect(url_for("home"))
         file = request.files['file']
@@ -45,6 +45,21 @@ def upload_file():
         #return redirect(f"/{analysis_id}/")
         redirect(url_for("home"))
     return redirect(url_for("home"))
+
+@app.route("/<analysis_id>", methods=["GET", "POST"])
+def send_shots(analysis_id: str):
+    json_path = os.path.join(app.config['SHOT_ANALYSIS'], analysis_id, "shot_analysis.json")
+    with open(json_path) as json_file:
+        shot_analysis = json.load(json_file)
+    shots = []
+    for i in range(len(shot_analysis["shots"])):
+        shot = shot_analysis["shots"][i]
+        classification = shot["classification"]
+        clip_path = f"analysis_results/{analysis_id}/{i}{classification}.mp4"
+        url = url_for('static', filename=clip_path)
+        shots.append((classification, url))
+    annotated_vid_path = f"analysis_results/{analysis_id}/annotated_video.mp4"
+    return render_template("shots_dashboard.html", shots=shots, annotated_vid_url=url_for('static', filename=annotated_vid_path))
 
 """
 def get_classes(shots: list) -> dict:

@@ -2,7 +2,6 @@ import cv2
 import json
 import sys
 import mediapipe as mp
-import numpy as np
 from os.path import join
 from analysis_pipeline.pose_extraction import extract_joint_frames, PoseNotFoundError
 from analysis_pipeline.shot_analysis import analyse_shots
@@ -59,13 +58,16 @@ def analyse_video(video_path, out_dir):
     height, width, _ = annotated_frames[0].shape
     for i in range(len(shot_analysis["intervals"])):
         start_t, end_t = shot_analysis["intervals"][i]
+        classification, confidence = shot_analysis["classifications"][i]
+        clip_out = cv2.VideoWriter(join(out_dir, f"{str(i)}{classification}.mp4"), -1, fps, (width, height))
         for j in range(start_t, end_t+1):
             mp_drawing.draw_landmarks(annotated_frames[j], mp_landmarks[j], mp_pose.POSE_CONNECTIONS)
-            classification, confidence = shot_analysis["classifications"][i]
             text = f"{classification} ({str(round(100*confidence, 2))}%)"
             text_pos = (50, 70)
             cv2.putText(annotated_frames[j], text, text_pos, cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 8, cv2.LINE_AA)  # black outline
             cv2.putText(annotated_frames[j], text, text_pos, cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv2.LINE_AA)
+            clip_out.write(annotated_frames[j])
+        clip_out.release()
             
     video_out = cv2.VideoWriter(join(out_dir, "annotated_video.mp4"), -1, fps, (width, height))
     for f in annotated_frames:

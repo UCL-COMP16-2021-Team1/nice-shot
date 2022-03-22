@@ -2,6 +2,8 @@ from fileinput import filename
 from flask import Flask, request, render_template, redirect, url_for
 import os
 import json
+
+from matplotlib.pyplot import cla
 from utilities import ANALYSIS_FOLDER, ALLOWED_EXTENSIONS
 from analysis_pipeline.video_analysis import analyse_video
 import hashlib
@@ -83,22 +85,37 @@ def view_filtered_analysis(analysis_id: str, class_filter: str):
     return view_shots(analysis_id, class_filter)
 
 
-@app.route("/get_analysis?id=<analysis_id>?filter=<class_filter>", methods=["GET"])
+@app.route("/<analysis_id>/<class_filter>/get_analysis", methods=["GET"])
 def get_filtered_analysis_json(analysis_id: str, class_filter: str):
     json_path = os.path.join(app.config['SHOT_ANALYSIS'], analysis_id, "shot_analysis.json")
     with open(json_path) as json_file:
         shot_analysis = json.load(json_file)
     if class_filter not in ["forehand", "backhand", "smash", "service"]:
         return shot_analysis
-    for i in range(len(shot_analysis['shots'])):
+    i = 0
+    while i < len(shot_analysis['shots']):
         if shot_analysis['shots'][i]['classification'] != class_filter:
             shot_analysis['shots'].pop(i)
+        else:
+            i += 1
     return shot_analysis
 
 
-@app.route("/get_analysis?id=<analysis_id>")
+@app.route("/<analysis_id>/get_analysis")
 def get_analysis_json(analysis_id: str):
     return get_filtered_analysis_json(analysis_id, "all")
+
+
+@app.route("/<analysis_id>/3d/<int:index>", methods=["GET"])
+def view_3d_analysis(analysis_id: str, index: int):
+    return render_template("3d.html", analysis_url=url_for("get_analysis_json", analysis_id=analysis_id), shot_index=index)
+
+
+@app.route("/<analysis_id>/<class_filter>/3d/<int:index>", methods=["GET"])
+def view_filtered_3d_analysis(analysis_id: str, class_filter: str, index: int):
+    if class_filter not in ["forehand", "backhand", "smash", "service"]:
+        return redirect(url_for("view_3d_analysis", analysis_id=analysis_id, index=index))
+    return render_template("3d.html", analysis_url=url_for("get_filtered_analysis_json", analysis_id=analysis_id, class_filter=class_filter), shot_index=index)
 
 
 if __name__ == '__main__':

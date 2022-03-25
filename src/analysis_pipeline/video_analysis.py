@@ -41,12 +41,16 @@ def analyse_video(video_path, out_dir):
                 "end_frame_idx": int(end_t),
                 "classification": classification,
                 "confidence": float(confidence),
-                "joint_frames": shot_joint_frames
-            } for ((start_t, end_t), (classification, confidence), shot_joint_frames) 
+                "joint_frames": shot_joint_frames,
+                "speed": speed,
+                "hand": hand
+            } for ((start_t, end_t), (classification, confidence), shot_joint_frames, speed, hand) 
             in zip(
                 shot_analysis["intervals"], 
                 shot_analysis["classifications"], 
-                shot_analysis["joint_frames"], 
+                shot_analysis["joint_frames"],
+                shot_analysis["speeds"],
+                shot_analysis["hands"]
             )
         ]
     }
@@ -68,11 +72,18 @@ def analyse_video(video_path, out_dir):
             cv2.putText(annotated_frames[j], text, text_pos, cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv2.LINE_AA)
             clip_out.write(annotated_frames[j])
         clip_out.release()
+
+        bvh = pose2bvh(shot_analysis["joint_frames"][i], fps)
+        bvh_file = open(join(out_dir, f"{str(i)}{classification}.bvh"), "w")
+        bvh_file.write(bvh)
+        bvh_file.close()
             
     video_out = cv2.VideoWriter(join(out_dir, "annotated_video.mp4"), -1, fps, (width, height))
     for f in annotated_frames:
         video_out.write(f)
     video_out.release()
+
+    pose2bvh(joint_frames, fps)
 
 if __name__ == "__main__":
     args = sys.argv[1:]

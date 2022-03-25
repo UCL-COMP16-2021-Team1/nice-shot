@@ -48,6 +48,11 @@ function set_shot() {
 }
 set_shot();
 
+const geometry = new THREE.SphereGeometry(0.01, 32, 16);
+const material = new THREE.MeshBasicMaterial({color: 0xff0000});
+const racket_indicator = new THREE.Mesh(geometry, material);
+scene.add(racket_indicator);
+
 // options for GUI
 var anim_options = {
 	paused: false,
@@ -138,6 +143,17 @@ function animate() {
 
 	for (let i = 0; i < joint_lines.length; i++) {
 		scene.add(joint_lines[i]);
+	}
+
+	if (shot.hand == "left") {
+		racket_indicator.position.x = left_wrist.x;
+		racket_indicator.position.y = left_wrist.y;
+		racket_indicator.position.z = left_wrist.z;
+	}
+	else {
+		racket_indicator.position.x = right_wrist.x;
+		racket_indicator.position.y = right_wrist.y;
+		racket_indicator.position.z = right_wrist.z;
 	}
 
 	if (!anim_options.paused) {

@@ -1,24 +1,35 @@
 import numpy as np
-import copy
 import math
 
+joint_order = []
+
 def joint2bvh(name, joint_offsets, joint_children):
-    offset = joint_offsets[name][0]
+    offset = joint_offsets[name]
     if len(joint_children[name]) == 0:
-        body = "End Site\n{\nOFFSET 0.00 0.00 0.00\n}\n"
+        return f"End Site\n{{\nOFFSET {round(-offset[0],2)} {round(-offset[1],2)} {round(offset[2],2)}\n}}\n"
+
+    joint_order.append(name)
+    if len(joint_children[name]) == 1 and len(joint_children[joint_children[name][0]]) == 0:
+        child_offset = joint_offsets[joint_children[name][0]]
+        body = f"End Site\n{{\nOFFSET {round(-child_offset[0],2)} {round(-child_offset[1],2)} {round(child_offset[2],2)}\n}}\n"
     else:
         body = children2bvh(name, joint_offsets, joint_children)
-    bvh = f"JOINT {name}\n{{\nOFFSET {round(offset[0],2)} {round(offset[1],2)} {round(offset[2],2)}\nCHANNELS 3 Zrotation Xrotation Yrotation\n{body}}}"
+    bvh = f"JOINT {name}\n{{\nOFFSET {-round(offset[0],2)} {round(-offset[1],2)} {round(offset[2],2)}\nCHANNELS 3 Zrotation Xrotation Yrotation\n{body}}}"
     return bvh
 
 def children2bvh(parent, joint_offsets, joint_children):
     bvh = ""
-    for j in joint_children[parent]:
-        bvh += joint2bvh(j, joint_offsets, joint_children) + "\n"
+    children_number = len(joint_children[parent])
+    if children_number > 1:
+        for i in range(children_number):
+            joint_order.append(f"{parent}{i}")
+            bvh += f"JOINT {parent}{i}\n{{\nOFFSET 0.00 0.00 0.00\nCHANNELS 3 Zrotation Xrotation Yrotation\n{joint2bvh(joint_children[parent][i], joint_offsets, joint_children)}\n}}\n"
+    elif children_number == 1:
+        bvh += f"{joint2bvh(joint_children[parent][0], joint_offsets, joint_children)}\n"
     return bvh
 
-def world2local(child_frames, parent_frames):
-    return (np.array(child_frames) - np.array(parent_frames)).tolist()
+def world2local(child_pos, parent_pos):
+    return (np.array(child_pos) - np.array(parent_pos)).tolist()
 
 def pose2bvh(joint_frames, fps):
     joint_parents = {
@@ -59,24 +70,40 @@ def pose2bvh(joint_frames, fps):
     joint_names = joint_parents.keys()
     for j in joint_names:
         p = joint_parents[j]
+        if p == j:
+            continue
         joint_children[p].append(j)
-    joint_children["torso"].remove("torso")
     
-    joint_offsets = copy.deepcopy(joint_frames)
+    joint_offsets = {}
     for j in joint_names:
-        joint_offsets[j] = world2local(joint_frames[j], joint_frames[joint_parents[j]])
+        joint_offsets[j] = world2local(joint_frames[j][0], joint_frames[joint_parents[j]][0])
 
     root_body = children2bvh("torso", joint_offsets, joint_children)
-    frame_count = len(joint_offsets["head"])
+    frame_count = len(joint_frames["head"])
     bvh = f"HIERARCHY\nROOT torso\n{{\nOFFSET 0.00 0.00 0.00\nCHANNELS 3 Xposition Yposition Zposition\n{root_body}}}\nMOTION\nFrames: {frame_count}\nFrame Time: {1/fps}\n"
 
-    motion_order = ["torso", "left_hip", "left_knee", "left_foot", "neck", "head", "left_shoulder", "left_elbow", "left_wrist", "right_shoulder", "right_elbow", "right_wrist", "right_hip", "right_knee", "right_foot"]
     for i in range(frame_count):
-        for j in motion_order:
-            offset = joint_offsets[j][i]
-            bvh += f"{round(math.degrees(math.atan2(offset[0],offset[1])),2)} {round(math.degrees(math.atan2(offset[2],offset[1])),2)} {round(math.degrees(math.atan2(offset[0],offset[2])),2)} "
+        torso_pos = joint_frames["torso"][i]
+        bvh += f"{round(-torso_pos[0],2)} {round(-torso_pos[1],2)} {round(torso_pos[2],2)} "
+        for j in joint_order:
+            if j[-1].isdigit():
+                parent = j[:-1]
+                child = joint_children[parent][int(j[-1])]
+            else:
+                parent = j
+                child = joint_children[parent][0]
+            current_offset = world2local(joint_frames[child][i], joint_frames[parent][i])
+            initial_offset = joint_offsets[child]
+
+            initial_z_rot = math.degrees(math.atan2(-initial_offset[1], -initial_offset[0]))
+            initial_x_rot = math.degrees(math.atan2(-initial_offset[1], initial_offset[2]))
+            initial_y_rot = math.degrees(math.atan2(-current_offset[0], current_offset[2]))
+
+            z_rot = math.degrees(math.atan2(-current_offset[1], -current_offset[0]))
+            x_rot = math.degrees(math.atan2(-current_offset[1], current_offset[2]))
+            y_rot = math.degrees(math.atan2(-current_offset[0], current_offset[2]))
+
+            bvh += f"{round(z_rot-initial_z_rot,2)} {round(x_rot-initial_x_rot,2)} {round(y_rot-initial_y_rot,2)} "
         bvh += "\n"
 
-    f = open("test.bvh", "w")
-    f.write(bvh)
-    f.close()
+    return bvh

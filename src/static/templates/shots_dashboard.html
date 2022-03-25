@@ -51,7 +51,7 @@
                         </div>
                     </div>
                     <div  class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3">
-                    {% for classification, url in shots %}
+                    {% for classification, url, speed, hand, duration, bvh_url in shots %}
                         <div class="col">
                             <div class="card shadow-lg bg-dark">
                                 <div class="card-body bg-dark">
@@ -59,9 +59,14 @@
                                     <video controls>
                                         <source src="{{ url }}" type="video/mp4">
                                     </video>
+                                    <ul>
+                                        <li><small class="text-muted">duration</small> {{ duration }}s</li>
+                                        <li><small class="text-muted">hand</small> {{ hand }}</li>
+                                        <li><small class="text-muted">speed</small> {{ speed }}m/s</li>
+                                    </ul>
                                     <div class="btn-group">
                                         <a href="/{{ analysis_id }}/{{ filter }}/3d/{{ loop.index0 }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-badge-3d-fill"></i> View in 3D</a>
-                                        <a href="#" class="btn btn-sm btn-outline-secondary"><i class="bi bi-download"></i> Download .bvh</a>
+                                        <a href="{{ bvh_url }}" class="btn btn-sm btn-outline-secondary" download=""><i class="bi bi-download"></i> Download .bvh</a>
                                     </div>
                                 </div>
                             </div>

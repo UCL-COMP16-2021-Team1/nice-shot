@@ -11,6 +11,8 @@ textures/
 *.mp4
 *.avi
 *.png
+*.bvh
+*.json
 
 # Virtual environments
 venv/

@@ -45,7 +45,7 @@ def upload_file():
         analyse_video(video_path, analysis_dir)
         os.remove(video_path)
 
-        return redirect(f"/{analysis_id}/")
+        return redirect(f"/{analysis_id}")
     return redirect(url_for("home"))
 
 
@@ -64,9 +64,15 @@ def view_shots(analysis_id: str, class_filter: str):
             classes.add(classification)
         if class_filter != "all" and classification != class_filter:
             continue
+        speed = round(shot["speed"], 3)
+        hand = shot["hand"]
+        duration = len(shot["joint_frames"]) / shot_analysis["fps"]
         clip_path = f"analysis_results/{analysis_id}/{i}{classification}.mp4"
         url = url_for('static', filename=clip_path)
-        shots.append((classification, url))
+
+        bvh_path = f"analysis_results/{analysis_id}/{i}{classification}.bvh"
+        bvh_url = url_for('static', filename=bvh_path)
+        shots.append((classification, url, speed, hand, duration, bvh_url))
     annotated_vid_path = f"analysis_results/{analysis_id}/annotated_video.mp4"
     classes = list(classes)
     classes.sort()

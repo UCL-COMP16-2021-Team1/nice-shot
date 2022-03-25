@@ -46,6 +46,8 @@ def analyse_shots(joint_frames):
     shot_analysis["intervals"] = []
     shot_analysis["classifications"] = []
     shot_analysis["joint_frames"] = []
+    shot_analysis["speeds"] = []
+    shot_analysis["hands"] = []
 
     for start_t, end_t in shot_intervals:
         shot_analysis["intervals"].append((start_t, end_t))
@@ -55,5 +57,16 @@ def analyse_shots(joint_frames):
         shot_analysis["joint_frames"].append(shot_joint_frames)
         classification = classify_shot(shot_joint_frames)
         shot_analysis["classifications"].append(classification)
+
+        mean_lw_speed, mean_rw_speed = np.mean(lw_speed[start_t:end_t+1]), np.mean(rw_speed[start_t:end_t+1])
+        
+        if mean_lw_speed > mean_rw_speed:
+            hand = "left"
+            speed = mean_lw_speed
+        else:
+            hand = "right"
+            speed = mean_rw_speed
+        shot_analysis["speeds"].append(speed)
+        shot_analysis["hands"].append(hand)
 
     return shot_analysis

@@ -1,11 +1,9 @@
-from fileinput import filename
 from flask import Flask, request, render_template, redirect, url_for
 import os
 import json
 
-from matplotlib.pyplot import cla
 from utilities import ANALYSIS_FOLDER, ALLOWED_EXTENSIONS
-from analysis_pipeline.video_analysis import analyse_video
+from analysis_pipeline.video_analysis import AnalysisFailedError, analyse_video
 import hashlib
 import time
 
@@ -39,11 +37,16 @@ def upload_file():
         analysis_id = str(hasher.hexdigest()[:10])
         analysis_dir = os.path.join(app.config['SHOT_ANALYSIS'], analysis_id)
         os.mkdir(analysis_dir)
-        video_path = os.path.join(analysis_dir, file.filename)
+        video_path = os.path.join(analysis_dir, f"{analysis_id}_{file.filename}")
         file.save(video_path)
 
-        analyse_video(video_path, analysis_dir)
-        os.remove(video_path)
+        try:
+            analyse_video(video_path, analysis_dir)
+            os.remove(video_path)
+        except AnalysisFailedError:
+            os.remove(video_path)
+            os.rmdir(analysis_dir)
+            return redirect(url_for("home"))
 
         return redirect(f"/{analysis_id}")
     return redirect(url_for("home"))
@@ -64,15 +67,17 @@ def view_shots(analysis_id: str, class_filter: str):
             classes.add(classification)
         if class_filter != "all" and classification != class_filter:
             continue
-        speed = round(shot["speed"], 3)
+        speed = shot["speed"] * shot_analysis["fps"]
+        speed = round(speed, 3)
         hand = shot["hand"]
-        duration = len(shot["joint_frames"]) / shot_analysis["fps"]
+        duration = (shot["end_frame_idx"] - shot["start_frame_idx"]) / shot_analysis["fps"]
+        duration = round(duration, 1)
         clip_path = f"analysis_results/{analysis_id}/{i}{classification}.mp4"
-        url = url_for('static', filename=clip_path)
+        clip_url = url_for('static', filename=clip_path)
 
         bvh_path = f"analysis_results/{analysis_id}/{i}{classification}.bvh"
         bvh_url = url_for('static', filename=bvh_path)
-        shots.append((classification, url, speed, hand, duration, bvh_url))
+        shots.append((classification, clip_url, speed, hand, duration, bvh_url))
     annotated_vid_path = f"analysis_results/{analysis_id}/annotated_video.mp4"
     classes = list(classes)
     classes.sort()

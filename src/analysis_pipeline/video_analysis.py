@@ -32,6 +32,20 @@ def analyse_video(video_path, out_dir):
         raise AnalysisFailedError("Video analysis failed because no pose could be detected.")
 
     shot_analysis = analyse_shots(joint_frames)
+    shots = list(zip(
+                shot_analysis["intervals"], 
+                shot_analysis["classifications"], 
+                shot_analysis["joint_frames"],
+                shot_analysis["speeds"],
+                shot_analysis["hands"]
+            ))
+
+    for s in shots:
+        interval = s[0]
+        length = interval[1] - interval[0]
+        if length / fps < 0.6:
+            shots.remove(s)
+
     analysis_json = {
         "fps": fps,
         "shots": 
@@ -45,13 +59,7 @@ def analyse_video(video_path, out_dir):
                 "speed": speed,
                 "hand": hand
             } for ((start_t, end_t), (classification, confidence), shot_joint_frames, speed, hand) 
-            in zip(
-                shot_analysis["intervals"], 
-                shot_analysis["classifications"], 
-                shot_analysis["joint_frames"],
-                shot_analysis["speeds"],
-                shot_analysis["hands"]
-            )
+            in shots
         ]
     }
     json_file = open(join(out_dir, "shot_analysis.json"), "w")
@@ -60,9 +68,10 @@ def analyse_video(video_path, out_dir):
 
     annotated_frames = frames.copy()
     height, width, _ = annotated_frames[0].shape
-    for i in range(len(shot_analysis["intervals"])):
-        start_t, end_t = shot_analysis["intervals"][i]
-        classification, confidence = shot_analysis["classifications"][i]
+    for i in range(len(shots)):
+        s = shots[i]
+        start_t, end_t = s[0]
+        classification, confidence = s[1]
         clip_out = cv2.VideoWriter(join(out_dir, f"{str(i)}{classification}.mp4"), -1, fps, (width, height))
         for j in range(start_t, end_t+1):
             mp_drawing.draw_landmarks(annotated_frames[j], mp_landmarks[j], mp_pose.POSE_CONNECTIONS)
@@ -73,7 +82,7 @@ def analyse_video(video_path, out_dir):
             clip_out.write(annotated_frames[j])
         clip_out.release()
 
-        bvh = pose2bvh(shot_analysis["joint_frames"][i], fps)
+        bvh = pose2bvh(s[2], fps)
         bvh_file = open(join(out_dir, f"{str(i)}{classification}.bvh"), "w")
         bvh_file.write(bvh)
         bvh_file.close()

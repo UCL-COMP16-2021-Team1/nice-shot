@@ -41,10 +41,11 @@
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body">
-                        <form action="/upload" method=post enctype=multipart/form-data>
-                            <input type=file name=file>
-                            <input type=submit value=Upload>
-                        </form>
+                            <p><small class="text-muted">By clicking "Upload" you consent to your analysis data being stored on a server for up to 24 hours and being publicly available via the generated link</small></p>
+                            <form action="/upload" method=post enctype=multipart/form-data>
+                                <input type=file name=file>
+                                <input type=submit value=Upload>
+                            </form>
                         </div>
                     </div>
                     </div>

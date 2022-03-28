@@ -32,7 +32,7 @@ def format_landmark_joints(landmarks):
             joints.append([l.x, l.y, l.z])
     return joints
 
-def extract_joint_frames(frames):
+def extract_pose_frames(frames):
     pose_frames = []
     mp_landmarks = []
 
@@ -59,6 +59,10 @@ def extract_joint_frames(frames):
         mp_landmarks.insert(0, mp_landmarks[0])
     
     pose_img = np.stack(pose_frames)
+    return pose_img, mp_landmarks
+
+def extract_joint_frames(frames):
+    pose_img, mp_landmarks = extract_pose_frames(frames)
     joint_frames = {
         "head": pose_img[:,0,...].tolist(),
         "left_elbow": pose_img[:,1,...].tolist(),

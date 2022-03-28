@@ -1,7 +1,7 @@
 import mediapipe as mp
 import numpy as np
 from scipy import ndimage
-from analysis_pipeline.classify_shot import classify_shot
+from analysis_pipeline import classify_shot
 import copy
 
 mp_pose = mp.solutions.pose

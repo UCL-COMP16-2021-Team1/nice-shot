@@ -3,9 +3,7 @@ import json
 import sys
 import mediapipe as mp
 from os.path import join
-from analysis_pipeline.pose_extraction import extract_joint_frames, PoseNotFoundError
-from analysis_pipeline.shot_analysis import analyse_shots
-from analysis_pipeline.pose2bvh import pose2bvh
+from analysis_pipeline import extract_joint_frames, PoseNotFoundError, analyse_shots, pose2bvh
 
 mp_pose = mp.solutions.pose
 mp_drawing = mp.solutions.drawing_utils

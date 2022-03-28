@@ -1,4 +1,5 @@
-from flask import Flask, request, render_template, redirect, url_for
+import shutil
+from flask import Flask, request, render_template, redirect, url_for, abort
 import os
 import json
 
@@ -6,6 +7,7 @@ from utilities import ANALYSIS_FOLDER, ALLOWED_EXTENSIONS
 from analysis_pipeline.video_analysis import AnalysisFailedError, analyse_video
 import hashlib
 import time
+from multiprocessing import Process
 
 
 app = Flask(__name__, template_folder='static/templates', static_folder='static')
@@ -52,6 +54,12 @@ def upload_file():
     return redirect(url_for("home"))
 
 
+def analysis_exits(analysis_id: str):
+    if os.path.isdir(os.path.join(app.config['SHOT_ANALYSIS'], analysis_id)):
+        return True
+    return False
+
+
 def view_shots(analysis_id: str, class_filter: str):
     json_path = os.path.join(app.config['SHOT_ANALYSIS'], analysis_id, "shot_analysis.json")
     with open(json_path) as json_file:
@@ -86,11 +94,15 @@ def view_shots(analysis_id: str, class_filter: str):
 
 @app.route("/<analysis_id>", methods=["GET"])
 def view_analysis(analysis_id: str):
+    if not analysis_exits(analysis_id):
+        return abort(404)
     return view_shots(analysis_id, "all")
 
 
 @app.route("/<analysis_id>/<class_filter>", methods=["GET"])
 def view_filtered_analysis(analysis_id: str, class_filter: str):
+    if not analysis_exits(analysis_id):
+        return abort(404)
     if class_filter not in ["forehand", "backhand", "smash", "service"]:
         return redirect(url_for("view_analysis", analysis_id=analysis_id))
     return view_shots(analysis_id, class_filter)
@@ -98,6 +110,8 @@ def view_filtered_analysis(analysis_id: str, class_filter: str):
 
 @app.route("/<analysis_id>/<class_filter>/get_analysis", methods=["GET"])
 def get_filtered_analysis_json(analysis_id: str, class_filter: str):
+    if not analysis_exits(analysis_id):
+        return abort(404)
     json_path = os.path.join(app.config['SHOT_ANALYSIS'], analysis_id, "shot_analysis.json")
     with open(json_path) as json_file:
         shot_analysis = json.load(json_file)
@@ -119,15 +133,33 @@ def get_analysis_json(analysis_id: str):
 
 @app.route("/<analysis_id>/3d/<int:index>", methods=["GET"])
 def view_3d_analysis(analysis_id: str, index: int):
+    if not analysis_exits(analysis_id):
+        return abort(404)
     return render_template("3d.html", analysis_url=url_for("get_analysis_json", analysis_id=analysis_id), shot_index=index)
 
 
 @app.route("/<analysis_id>/<class_filter>/3d/<int:index>", methods=["GET"])
 def view_filtered_3d_analysis(analysis_id: str, class_filter: str, index: int):
+    if not analysis_exits(analysis_id):
+        return abort(404)
     if class_filter not in ["forehand", "backhand", "smash", "service"]:
         return redirect(url_for("view_3d_analysis", analysis_id=analysis_id, index=index))
     return render_template("3d.html", analysis_url=url_for("get_filtered_analysis_json", analysis_id=analysis_id, class_filter=class_filter), shot_index=index)
 
 
+def delete_old_analysis():
+    while True:
+        ids = [d.name for d in os.scandir(app.config["SHOT_ANALYSIS"]) if d.is_dir()]
+        for i in ids:
+            json_path = os.path.join(app.config['SHOT_ANALYSIS'], i, "shot_analysis.json")
+            now = time.time()
+            if os.stat(json_path).st_mtime < now - 86400:
+                shutil.rmtree(os.path.join(app.config['SHOT_ANALYSIS'], i))
+        time.sleep(3600)
+
+
 if __name__ == '__main__':
+    p = Process(target=delete_old_analysis)
+    p.start()
     app.run()
+    p.join()

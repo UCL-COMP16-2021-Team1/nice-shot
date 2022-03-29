@@ -26,14 +26,18 @@ def home():
     return render_template("index.html")
 
 
+def render_error(error_message: str):
+    return render_template("error.html", error_message=error_message)
+
+
 @app.route('/upload', methods=['GET', 'POST'])
 def upload_file():
     if request.method == 'POST':
         if 'file' not in request.files:
-            return redirect(url_for("home"))
+            return render_error("No video file received.")
         file = request.files['file']
         if file.filename == '' or not allowed_file(file.filename):
-            return redirect(url_for("home"))
+            return render_error("Invalid video filename. Supported extensions include .mp4, .mov, and .avi.")
 
         hasher = hashlib.sha1(str(file.filename).encode('utf-8') + str(time.time()).encode('utf-8'))
         analysis_id = str(hasher.hexdigest()[:10])
@@ -45,10 +49,10 @@ def upload_file():
         try:
             analyse_video(video_path, analysis_dir)
             os.remove(video_path)
-        except AnalysisFailedError:
+        except AnalysisFailedError as e:
             os.remove(video_path)
             os.rmdir(analysis_dir)
-            return redirect(url_for("home"))
+            return render_error(str(e))
 
         return redirect(f"/{analysis_id}")
     return redirect(url_for("home"))
@@ -95,14 +99,14 @@ def view_shots(analysis_id: str, class_filter: str):
 @app.route("/<analysis_id>", methods=["GET"])
 def view_analysis(analysis_id: str):
     if not analysis_exits(analysis_id):
-        return abort(404)
+        return render_error("404 analysis not found")
     return view_shots(analysis_id, "all")
 
 
 @app.route("/<analysis_id>/<class_filter>", methods=["GET"])
 def view_filtered_analysis(analysis_id: str, class_filter: str):
     if not analysis_exits(analysis_id):
-        return abort(404)
+        return render_error("404 analysis not found")
     if class_filter not in ["forehand", "backhand", "smash", "service"]:
         return redirect(url_for("view_analysis", analysis_id=analysis_id))
     return view_shots(analysis_id, class_filter)
@@ -111,7 +115,7 @@ def view_filtered_analysis(analysis_id: str, class_filter: str):
 @app.route("/<analysis_id>/<class_filter>/get_analysis", methods=["GET"])
 def get_filtered_analysis_json(analysis_id: str, class_filter: str):
     if not analysis_exits(analysis_id):
-        return abort(404)
+        return render_error("404 analysis not found")
     json_path = os.path.join(app.config['SHOT_ANALYSIS'], analysis_id, "shot_analysis.json")
     with open(json_path) as json_file:
         shot_analysis = json.load(json_file)
@@ -134,14 +138,14 @@ def get_analysis_json(analysis_id: str):
 @app.route("/<analysis_id>/3d/<int:index>", methods=["GET"])
 def view_3d_analysis(analysis_id: str, index: int):
     if not analysis_exits(analysis_id):
-        return abort(404)
+        return render_error("404 analysis not found")
     return render_template("3d.html", analysis_url=url_for("get_analysis_json", analysis_id=analysis_id), shot_index=index)
 
 
 @app.route("/<analysis_id>/<class_filter>/3d/<int:index>", methods=["GET"])
 def view_filtered_3d_analysis(analysis_id: str, class_filter: str, index: int):
     if not analysis_exits(analysis_id):
-        return abort(404)
+        return render_error("404 analysis not found")
     if class_filter not in ["forehand", "backhand", "smash", "service"]:
         return redirect(url_for("view_3d_analysis", analysis_id=analysis_id, index=index))
     return render_template("3d.html", analysis_url=url_for("get_filtered_analysis_json", analysis_id=analysis_id, class_filter=class_filter), shot_index=index)
@@ -151,11 +155,15 @@ def delete_old_analysis():
     while True:
         ids = [d.name for d in os.scandir(app.config["SHOT_ANALYSIS"]) if d.is_dir()]
         for i in ids:
+            if i == "example":
+                continue
             json_path = os.path.join(app.config['SHOT_ANALYSIS'], i, "shot_analysis.json")
+            if not os.path.isfile(json_path):   # analysis still processing
+                continue
             now = time.time()
             if os.stat(json_path).st_mtime < now - 86400:
                 shutil.rmtree(os.path.join(app.config['SHOT_ANALYSIS'], i))
-        time.sleep(3600)
+        time.sleep(60)
 
 
 if __name__ == '__main__':

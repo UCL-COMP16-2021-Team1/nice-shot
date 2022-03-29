@@ -22,7 +22,7 @@
         <header>
             <div class="navbar navbar-dark bg-dark shadow-lg">
                 <div class="container">
-                    <a href="#" class="navbar-brand d-flex align-items-center" style="font-family: 'Racing Sans One', cursive;"><h3>Nice Shot!</h3></a>
+                    <a href="/" class="navbar-brand d-flex align-items-center" style="font-family: 'Racing Sans One', cursive;"><h3>Nice Shot!</h3></a>
                     <a href="/" class="btn text-light btn-outline-secondary"><i class="bi bi-house"></i> <strong>Home</strong></a>
                 </div>
             </div>
@@ -48,6 +48,8 @@
                                 <li><a class="dropdown-item" href="/{{ analysis_id }}/{{ class }}">{{ class }}</a></li>
                             {% endfor %}
                             </ul>
+                            <button class="btn btn-outline-secondary" onclick="navigator.clipboard.writeText(window.location.href);"><i class="bi bi-link-45deg"></i> Copy link</button>
+                            <a href="/{{ analysis_id }}/{{ class }}/get_analysis" class="btn btn-outline-secondary" download><i class="bi bi-download"></i> Download .json</a>
                         </div>
                     </div>
                     <div  class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3">
@@ -66,7 +68,7 @@
                                     </ul>
                                     <div class="btn-group">
                                         <a href="/{{ analysis_id }}/{{ filter }}/3d/{{ loop.index0 }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-badge-3d-fill"></i> View in 3D</a>
-                                        <a href="{{ bvh_url }}" class="btn btn-sm btn-outline-secondary" download=""><i class="bi bi-download"></i> Download .bvh</a>
+                                        <a href="{{ bvh_url }}" class="btn btn-sm btn-outline-secondary" download><i class="bi bi-download"></i> Download .bvh</a>
                                     </div>
                                 </div>
                             </div>
@@ -76,7 +78,8 @@
             </div>
           </main>
         
-        <footer class="mt-auto text-white-50">
+        <footer class="mt-auto text-white-50 text-center py-3">
+            <p><small>Made by Prithvi Kohli, Morgane Ohlig, and Jin Feng. Open-source code available at: <a href="https://github.com/UCL-COMP16-2021-Team1/nice-shot" target="_blank">https://github.com/UCL-COMP16-2021-Team1/nice-shot</a></small></p>
         </footer>
 
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>

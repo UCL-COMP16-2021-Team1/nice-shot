@@ -38,6 +38,7 @@ def analyse_video(video_path, out_dir):
                 shot_analysis["hands"]
             ))
 
+    # assume shot intervals less than 0.6s long are invalid detections, so ignore these
     for s in shots:
         interval = s[0]
         length = interval[1] - interval[0]
@@ -89,8 +90,6 @@ def analyse_video(video_path, out_dir):
     for f in annotated_frames:
         video_out.write(f)
     video_out.release()
-
-    pose2bvh(joint_frames, fps)
 
 if __name__ == "__main__":
     args = sys.argv[1:]

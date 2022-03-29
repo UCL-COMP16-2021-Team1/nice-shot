@@ -62,6 +62,15 @@ def extract_pose_frames(frames):
     return pose_img, mp_landmarks
 
 def extract_joint_frames(frames):
+    """Extracts 3D coordinates of joints in world space, measured in metres with the origin at the center of the hips, for each frame
+
+    Parameters:
+        frames (list) -- list of NumPy image arrays representing the video frames
+
+    Returns:
+        joint_frames (dict) -- dictionary of 3D joint coordinate frames with joint names as the keys
+        mp_landmarks (list) -- MediaPipe joint image landmarks
+    """
     pose_img, mp_landmarks = extract_pose_frames(frames)
     joint_frames = {
         "head": pose_img[:,0,...].tolist(),

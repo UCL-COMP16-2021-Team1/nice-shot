@@ -6,6 +6,15 @@ model = tf.keras.models.load_model(os.path.join("analysis_pipeline/", "shot_reco
 class_names = ['backhand', 'forehand', 'service', 'smash']
 
 def classify_shot(joint_frames):
+    """Classifies 3D pose animation into 'backhand', 'forehand', 'service', or 'smash' shot
+
+    Parameters:
+        joint_frames (dict) -- dictionary of 3D joint coordinate frames with joint names as the keys
+
+    Returns:
+        classification (str), -- shot classification
+        confidence (float) -- confidence score
+    """
     ordered_joints = ["head",
         "left_elbow",
         "left_foot",

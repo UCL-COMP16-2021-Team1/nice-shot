@@ -39,6 +39,15 @@ def calc_joint_speed(frames):
     return np.sqrt(speed_x**2 + speed_y**2 + speed_z**2)
 
 def analyse_shots(joint_frames):
+    """Analyse all shots performed by 3D pose animation
+
+    Parameters:
+        joint_frames (dict) -- dictionary of 3D joint coordinate frames with joint names as the keys
+
+    Returns:
+        shot_analysis (dict) -- dictionary of lists containing analytic entries for each shot. 
+                                Keys are analytic names: 'intervals', 'classifications', 'joint_frames', 'speeds', 'hands'
+    """
     lw_speed, rw_speed = calc_joint_speed(joint_frames["left_wrist"]), calc_joint_speed(joint_frames["right_wrist"])
     shot_intervals = detect_shot_times(lw_speed, rw_speed)
 

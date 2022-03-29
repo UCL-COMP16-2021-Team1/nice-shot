@@ -32,6 +32,15 @@ def world2local(child_pos, parent_pos):
     return (np.array(child_pos) - np.array(parent_pos)).tolist()
 
 def pose2bvh(joint_frames, fps):
+    """Converts joint frames given in world coordinates to .bvh format
+
+    Parameters:
+        joint_frames (dict) -- dictionary of 3D joint coordinate frames with joint names as the keys
+        fps (float) -- frames-per-second of the animation
+
+    Returns:
+        bvh (str) -- formatted .bvh text
+    """
     joint_parents = {
         "head": "neck",
         "left_elbow": "left_shoulder",

@@ -12,6 +12,12 @@ class AnalysisFailedError(Exception):
     pass
 
 def analyse_video(video_path, out_dir):
+    """Perform 3D shot analysis on video feed
+
+    Parameters:
+        video_path, -- path to video file to be analysed
+        out_dir -- path to directory to output analysis results in (.json file, annotated video and clips, and .bvh files) 
+    """
     cap = cv2.VideoCapture(video_path)
     fps = cap.get(cv2.CAP_PROP_FPS)
     frames = []

@@ -12,10 +12,19 @@ This system currently supports the following shots; forehand, backhand, smash, s
 - Reconstruction of poses with 3D skeletons in [Three.js](https://threejs.org).
 
 ## Dependencies
+- [Numpy](https://numpy.org/)
+- [OpenCV](https://opencv.org/)
 - [MediaPipe](https://mediapipe.dev)
 - [Tensorflow](https://www.tensorflow.org)
-- [Three.js](https://threejs.org)
-- [Vue.js](https://vuejs.org)
+- [SciPy](https://scipy.org/)
+- [Flask](https://flask.palletsprojects.com/en/2.1.x/)
+
+## Deployment
+1. Ensure the above dependencies are installed and that you are running Python 3.8.
+2. cd into 'src' and run 'python app.py' to start the Flask server.
+3. The webapp can then be accessed by navigating to ‘localhost:5000’.
+4. Analysis results are stored in the folder 'src/static/analysis_results'
+5. If you wish to use the analysis pipeline API, please refer to the provided documentation on the project website.
 
 ## Links and Additional Resources
 - [Development blog](https://ucl-comp16-2021-team1.github.io/blog/)

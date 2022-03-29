@@ -1,3 +1,5 @@
+# COMP0016-Team1-Prithvi Kohli
+
 import mediapipe as mp
 import numpy as np
 from scipy import ndimage

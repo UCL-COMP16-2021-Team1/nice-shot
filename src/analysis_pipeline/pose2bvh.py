@@ -6,15 +6,15 @@ joint_order = []
 def joint2bvh(name, joint_offsets, joint_children):
     offset = joint_offsets[name]
     if len(joint_children[name]) == 0:
-        return f"End Site\n{{\nOFFSET {round(-offset[0],2)} {round(-offset[1],2)} {round(offset[2],2)}\n}}\n"
+        return f"End Site\n{{\nOFFSET {round(offset[0],2)} {round(offset[1],2)} {round(offset[2],2)}\n}}\n"
 
     joint_order.append(name)
     if len(joint_children[name]) == 1 and len(joint_children[joint_children[name][0]]) == 0:
         child_offset = joint_offsets[joint_children[name][0]]
-        body = f"End Site\n{{\nOFFSET {round(-child_offset[0],2)} {round(-child_offset[1],2)} {round(child_offset[2],2)}\n}}\n"
+        body = f"End Site\n{{\nOFFSET {round(child_offset[0],2)} {round(child_offset[1],2)} {round(child_offset[2],2)}\n}}\n"
     else:
         body = children2bvh(name, joint_offsets, joint_children)
-    bvh = f"JOINT {name}\n{{\nOFFSET {-round(offset[0],2)} {round(-offset[1],2)} {round(offset[2],2)}\nCHANNELS 3 Zrotation Xrotation Yrotation\n{body}}}"
+    bvh = f"JOINT {name}\n{{\nOFFSET {round(offset[0],2)} {round(offset[1],2)} {round(offset[2],2)}\nCHANNELS 3 Zrotation Xrotation Yrotation\n{body}}}"
     return bvh
 
 def children2bvh(parent, joint_offsets, joint_children):
@@ -84,7 +84,7 @@ def pose2bvh(joint_frames, fps):
 
     for i in range(frame_count):
         torso_pos = joint_frames["torso"][i]
-        bvh += f"{round(-torso_pos[0],2)} {round(-torso_pos[1],2)} {round(torso_pos[2],2)} "
+        bvh += f"{round(torso_pos[0],2)} {round(torso_pos[1],2)} {round(torso_pos[2],2)} "
         for j in joint_order:
             if j[-1].isdigit():
                 parent = j[:-1]
@@ -92,16 +92,16 @@ def pose2bvh(joint_frames, fps):
             else:
                 parent = j
                 child = joint_children[parent][0]
-            current_offset = world2local(joint_frames[child][i], joint_frames[parent][i])
-            initial_offset = joint_offsets[child]
+            initial_pos = (np.array(joint_frames[parent][i]) + np.array(joint_offsets[child])).tolist()
+            current_pos = joint_frames[child][i]
 
-            initial_z_rot = math.degrees(math.atan2(-initial_offset[1], -initial_offset[0]))
-            initial_x_rot = math.degrees(math.atan2(-initial_offset[1], initial_offset[2]))
-            initial_y_rot = math.degrees(math.atan2(-current_offset[0], current_offset[2]))
+            initial_z_rot = math.degrees(math.atan2(initial_pos[1], initial_pos[0]))
+            initial_x_rot = math.degrees(math.atan2(initial_pos[1], initial_pos[2]))
+            initial_y_rot = math.degrees(math.atan2(initial_pos[0], initial_pos[2]))
 
-            z_rot = math.degrees(math.atan2(-current_offset[1], -current_offset[0]))
-            x_rot = math.degrees(math.atan2(-current_offset[1], current_offset[2]))
-            y_rot = math.degrees(math.atan2(-current_offset[0], current_offset[2]))
+            z_rot = math.degrees(math.atan2(current_pos[1], current_pos[0]))
+            x_rot = math.degrees(math.atan2(current_pos[1], current_pos[2]))
+            y_rot = math.degrees(math.atan2(current_pos[0], current_pos[2]))
 
             bvh += f"{round(z_rot-initial_z_rot,2)} {round(x_rot-initial_x_rot,2)} {round(y_rot-initial_y_rot,2)} "
         bvh += "\n"

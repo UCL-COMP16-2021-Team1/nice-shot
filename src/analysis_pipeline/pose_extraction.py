@@ -1,3 +1,5 @@
+# COMP0016-Team1-Prithvi Kohli, Jin Feng
+
 import cv2
 import mediapipe as mp
 import numpy as np

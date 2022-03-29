@@ -1,3 +1,5 @@
+# COMP0016-Team1-Prithvi Kohli, Morgane Ohlig
+
 import cv2
 import json
 import sys

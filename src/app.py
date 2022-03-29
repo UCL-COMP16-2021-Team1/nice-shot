@@ -1,3 +1,5 @@
+# COMP0016-Team1-Prithvi Kohli, Morgane Ohlig, Jin Feng
+
 import shutil
 from flask import Flask, request, render_template, redirect, url_for
 import os

@@ -1,3 +1,5 @@
+# COMP0016-Team1-Prithvi Kohli, Morgane Ohlig
+
 from .classify_shot import classify_shot
 from .pose_extraction import extract_joint_frames, extract_pose_frames, PoseNotFoundError
 from .pose2bvh import pose2bvh

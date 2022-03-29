@@ -1,3 +1,5 @@
+# COMP0016-Team1-Prithvi Kohli
+
 import numpy as np
 import tensorflow as tf
 import os
